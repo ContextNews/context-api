@@ -1,0 +1,16 @@
+[project]
+name = "context-api"
+version = "0.1.0"
+description = "FastAPI service for Context News RDS access"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "sqlalchemy>=2.0",
+    "psycopg2-binary>=2.9",
+    "pgvector>=0.2",
+    "context-data-schema @ git+https://github.com/ContextNews/context-data-schemas.git@main",
+]
+
+[tool.poetry]
+package-mode = false
