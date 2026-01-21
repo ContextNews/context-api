@@ -24,6 +24,20 @@ export DATABASE_URL="postgresql+psycopg2://user:pass@host:5432/dbname"
 poetry run uvicorn app.main:app --reload
 ```
 
+## Docker
+
+Build the image:
+
+```bash
+docker build -t context-api .
+```
+
+Run the container (pass your database URL as an env var):
+
+```bash
+docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@host:5432/dbname" context-api
+```
+
 ## Endpoints
 
 - `GET /articles`

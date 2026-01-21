@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from datetime import date, datetime, time, timedelta
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -10,8 +12,22 @@ router = APIRouter()
 
 
 @router.get("/", response_model=list[StoryOut])
-def list_stories(db: Session = Depends(get_db)) -> list[StoryOut]:
-    stories_db = db.query(Story).filter(Story.parent_story_id.is_(None)).all()
+def list_stories(
+    story_date: date | None = Query(
+        default=None,
+        description="Filter by generated date (YYYY-MM-DD). Defaults to today.",
+    ),
+    db: Session = Depends(get_db),
+) -> list[StoryOut]:
+    target_date = story_date or date.today()
+    start = datetime.combine(target_date, time.min)
+    end = start + timedelta(days=1)
+    stories_db = (
+        db.query(Story)
+        .filter(Story.parent_story_id.is_(None))
+        .filter(Story.generated_at >= start, Story.generated_at < end)
+        .all()
+    )
     if not stories_db:
         return []
 
