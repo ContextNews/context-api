@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.image_fetcher import fetch_og_images
 from app.schemas import StoryArticleOut, StoryOut, StorySubStoryOut
 from rds_postgres.models import Article, ArticleStory, Story
 
@@ -12,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=list[StoryOut])
-def list_stories(
+async def list_stories(
     story_date: date | None = Query(
         default=None,
         description="Filter by generated date (YYYY-MM-DD). Defaults to today.",
@@ -46,10 +47,19 @@ def list_stories(
         .all()
     )
 
+    article_urls = list({row[4] for row in article_rows})
+    url_to_image = await fetch_og_images(article_urls)
+
     articles_by_story: dict[str, list[StoryArticleOut]] = {}
     for story_id, article_id, title, source, url in article_rows:
         articles_by_story.setdefault(story_id, []).append(
-            StoryArticleOut(article_id=article_id, headline=title, source=source, url=url)
+            StoryArticleOut(
+                article_id=article_id,
+                headline=title,
+                source=source,
+                url=url,
+                image_url=url_to_image.get(url),
+            )
         )
 
     sub_stories_db = (

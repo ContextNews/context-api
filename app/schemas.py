@@ -29,6 +29,7 @@ class StoryArticleOut(BaseModel):
     headline: str
     source: str
     url: str
+    image_url: str | None = None
 
 
 class StorySubStoryOut(BaseModel):
