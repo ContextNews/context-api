@@ -28,6 +28,7 @@ class StoryArticleOut(BaseModel):
     article_id: str
     headline: str
     source: str
+    url: str
 
 
 class StorySubStoryOut(BaseModel):

@@ -39,6 +39,7 @@ def list_stories(
             Article.id,
             Article.title,
             Article.source,
+            Article.url,
         )
         .join(Article, Article.id == ArticleStory.article_id)
         .filter(ArticleStory.story_id.in_(story_ids))
@@ -46,9 +47,9 @@ def list_stories(
     )
 
     articles_by_story: dict[str, list[StoryArticleOut]] = {}
-    for story_id, article_id, title, source in article_rows:
+    for story_id, article_id, title, source, url in article_rows:
         articles_by_story.setdefault(story_id, []).append(
-            StoryArticleOut(article_id=article_id, headline=title, source=source)
+            StoryArticleOut(article_id=article_id, headline=title, source=source, url=url)
         )
 
     sub_stories_db = (

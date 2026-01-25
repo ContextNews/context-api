@@ -132,7 +132,8 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
       {
         "article_id": "e6489b58bc3e7fb4",
         "headline": "'Living a nightmare': Families of teens missing after ski resort fire desperate for news",
-        "source": "bbc"
+        "source": "bbc",
+        "url": "https://www.bbc.com/news/articles/example"
       }
     ],
     "sub_stories": [
