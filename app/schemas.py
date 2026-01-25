@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
@@ -57,3 +57,9 @@ class SourceOut(BaseModel):
     owner: str
     state_media: bool
     based: str
+
+
+class LocationDailyCountOut(BaseModel):
+    date: date
+    location: str
+    article_count: int

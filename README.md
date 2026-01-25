@@ -46,6 +46,7 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
 - `GET /article-clusters?include_article_ids=true`
 - `GET /stories`
 - `GET /sources_data`
+- `GET /top-locations`
 - `GET /health`
 
 ### Response shapes
@@ -159,6 +160,18 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
     "owner": "BBC",
     "state_media": true,
     "based": "UK"
+  }
+]
+```
+
+`GET /top-locations` returns daily location counts for the last 7 days:
+
+```json
+[
+  {
+    "date": "2024-01-01",
+    "location": "Switzerland",
+    "article_count": 12
   }
 ]
 ```
