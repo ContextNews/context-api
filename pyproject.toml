@@ -11,6 +11,7 @@ dependencies = [
     "pgvector>=0.2",
     "context-data-schema @ git+https://github.com/ContextNews/context-data-schemas.git@main",
     "httpx (>=0.28.1,<0.29.0)",
+    "pycountry>=24.6",
 ]
 
 [tool.poetry]

@@ -1,6 +1,8 @@
 from datetime import date, datetime, time, timedelta
+from functools import lru_cache
 
 from fastapi import APIRouter, Depends
+import pycountry
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
@@ -10,6 +12,17 @@ from rds_postgres.models import Article, ArticleEntity
 
 
 router = APIRouter()
+
+
+@lru_cache(maxsize=1024)
+def resolve_iso3(location: str) -> str | None:
+    if not location:
+        return None
+    try:
+        country = pycountry.countries.lookup(location.strip())
+    except LookupError:
+        return None
+    return getattr(country, "alpha_3", None)
 
 
 @router.get("/", response_model=list[LocationDailyCountOut])
@@ -38,6 +51,7 @@ def list_top_locations(db: Session = Depends(get_db)) -> list[LocationDailyCount
             date=row.day,
             location=row.location,
             article_count=row.article_count,
+            iso3=resolve_iso3(row.location),
         )
         for row in rows
     ]

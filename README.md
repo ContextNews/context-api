@@ -171,7 +171,8 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
   {
     "date": "2024-01-01",
     "location": "Switzerland",
-    "article_count": 12
+    "article_count": 12,
+    "iso3": "CHE"
   }
 ]
 ```

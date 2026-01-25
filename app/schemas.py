@@ -63,3 +63,4 @@ class LocationDailyCountOut(BaseModel):
     date: date
     location: str
     article_count: int
+    iso3: str | None = None
