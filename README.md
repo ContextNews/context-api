@@ -44,7 +44,10 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
 - `GET /articles/{article_id}`
 - `GET /article-clusters`
 - `GET /article-clusters?include_article_ids=true`
+- `GET /article-clusters?cluster_date=YYYY-MM-DD`
+- `GET /article-clusters?cluster_date=YYYY-MM-DD&include_article_ids=true`
 - `GET /stories`
+- `GET /stories?story_date=YYYY-MM-DD`
 - `GET /sources_data`
 - `GET /top-locations`
 - `GET /health`
@@ -89,7 +92,7 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
 [
   {
     "article_cluster_id": "string",
-    "clustered_at": "2024-01-01T12:00:00Z"
+    "cluster_period": "2024-01-01T00:00:00Z"
   }
 ]
 ```
@@ -100,7 +103,7 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
 [
   {
     "article_cluster_id": "string",
-    "clustered_at": "2024-01-01T12:00:00Z",
+    "cluster_period": "2024-01-01T00:00:00Z",
     "article_ids": ["string"]
   }
 ]
@@ -127,6 +130,7 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
       "Multiple teenagers missing after the incident"
     ],
     "primary_location": "Switzerland",
+    "story_period": "2024-01-01T00:00:00Z",
     "generated_at": "2024-01-01T12:00:00Z",
     "updated_at": "2024-01-01T14:00:00Z",
     "articles": [
