@@ -125,7 +125,7 @@ sqlalchemy = "^2.0.29"
 type = "git"
 url = "https://github.com/ContextNews/context-data-schemas.git"
 reference = "main"
-resolved_reference = "0d36ad3b437388a846135ea3f62c4d3a57ac1518"
+resolved_reference = "3d063e381da291f0df83332e8d5cc82a8aba7887"
 
 [[package]]
 name = "fastapi"
