@@ -16,7 +16,7 @@ router = APIRouter()
 async def list_stories(
     story_date: date | None = Query(
         default=None,
-        description="Filter by generated date (YYYY-MM-DD). Defaults to today.",
+        description="Filter by story period date (YYYY-MM-DD). Defaults to today.",
     ),
     db: Session = Depends(get_db),
 ) -> list[StoryOut]:
@@ -26,7 +26,7 @@ async def list_stories(
     stories_db = (
         db.query(Story)
         .filter(Story.parent_story_id.is_(None))
-        .filter(Story.generated_at >= start, Story.generated_at < end)
+        .filter(Story.story_period >= start, Story.story_period < end)
         .all()
     )
     if not stories_db:
@@ -83,6 +83,7 @@ async def list_stories(
                 summary=story.summary,
                 key_points=story.key_points or [],
                 primary_location=story.primary_location,
+                story_period=story.story_period,
                 generated_at=story.generated_at,
                 updated_at=story.updated_at,
                 articles=articles_by_story.get(story.id, []),

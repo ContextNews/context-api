@@ -18,7 +18,7 @@ class ArticleOut(BaseModel):
 
 class ArticleClusterOut(BaseModel):
     article_cluster_id: str
-    clustered_at: datetime
+    cluster_period: datetime
     article_ids: list[str] | None = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -43,6 +43,7 @@ class StoryOut(BaseModel):
     summary: str
     key_points: list[str]
     primary_location: str | None
+    story_period: datetime
     generated_at: datetime
     updated_at: datetime
     articles: list[StoryArticleOut]

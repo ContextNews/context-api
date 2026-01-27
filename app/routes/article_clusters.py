@@ -1,3 +1,5 @@
+from datetime import date, datetime, time, timedelta
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -11,12 +13,23 @@ router = APIRouter()
 
 @router.get("/", response_model=list[ArticleClusterOut], response_model_exclude_none=True)
 def list_article_clusters(
+    cluster_date: date | None = Query(
+        default=None,
+        description="Filter by cluster period date (YYYY-MM-DD). Defaults to today.",
+    ),
     include_article_ids: bool = Query(
         False, description="Include article IDs for each cluster"
     ),
     db: Session = Depends(get_db),
 ) -> list[ArticleClusterOut]:
-    clusters = db.query(ArticleCluster).all()
+    target_date = cluster_date or date.today()
+    start = datetime.combine(target_date, time.min)
+    end = start + timedelta(days=1)
+    clusters = (
+        db.query(ArticleCluster)
+        .filter(ArticleCluster.cluster_period >= start, ArticleCluster.cluster_period < end)
+        .all()
+    )
     if not include_article_ids:
         return clusters
 
@@ -39,7 +52,7 @@ def list_article_clusters(
     return [
         ArticleClusterOut(
             article_cluster_id=cluster.article_cluster_id,
-            clustered_at=cluster.clustered_at,
+            cluster_period=cluster.cluster_period,
             article_ids=article_ids_by_cluster.get(cluster.article_cluster_id, []),
         )
         for cluster in clusters
