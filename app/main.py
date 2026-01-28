@@ -16,6 +16,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # local dev frontend
+        "https://d1j7fhf5s3t3r4.cloudfront.net",
     ],
     allow_credentials=True,
     allow_methods=["*"],
