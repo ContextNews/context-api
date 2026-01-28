@@ -65,3 +65,9 @@ class LocationDailyCountOut(BaseModel):
     location: str
     article_count: int
     iso3: str | None = None
+
+
+class PersonDailyCountOut(BaseModel):
+    date: date
+    person: str
+    article_count: int

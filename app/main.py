@@ -1,7 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import article_clusters, articles, sources, stories, top_locations
+from app.routes import (
+    article_clusters,
+    articles,
+    sources,
+    stories,
+    top_locations,
+    top_people,
+)
 
 
 app = FastAPI(title="Context API")
@@ -22,6 +29,7 @@ app.include_router(
 app.include_router(stories.router, prefix="/stories", tags=["stories"])
 app.include_router(sources.router, tags=["sources"])
 app.include_router(top_locations.router, prefix="/top-locations", tags=["locations"])
+app.include_router(top_people.router, prefix="/top-people", tags=["people"])
 
 
 @app.get("/health")
