@@ -40,3 +40,12 @@ app.include_router(top_people.router, prefix="/top-people", tags=["people"])
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+@app.get("/health/badge")
+def health_badge():
+    return {
+        "schemaVersion": 1,
+        "label": "api",
+        "message": "healthy",
+        "color": "brightgreen"
+    }
