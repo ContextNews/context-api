@@ -11,7 +11,11 @@ from app.routes import (
 )
 
 
-app = FastAPI(title="Context API")
+app = FastAPI(
+    title="Context API",
+    root_path="/api",
+    root_path_in_servers=False,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
