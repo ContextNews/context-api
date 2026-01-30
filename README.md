@@ -38,23 +38,85 @@ Run the container (pass your database URL as an env var):
 docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@host:5432/dbname" context-api
 ```
 
+## API Structure
+
+The API is organized into two main sections:
+
+- `/admin` - Administrative endpoints (status checks)
+- `/news` - News data endpoints (stories, articles, analytics, sources)
+
+### Common Query Parameters
+
+Most `/news` endpoints support these filtering parameters:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | enum | `today` | Time period filter: `today`, `week`, `month` |
+| `region` | enum | none | Region filter: `north_america`, `south_america`, `europe`, `africa`, `middle_east`, `asia`, `oceania` |
+| `from_date` | date | none | Custom start date (YYYY-MM-DD) |
+| `to_date` | date | none | Custom end date (YYYY-MM-DD) |
+| `limit` | int | none | Max results (1-100) |
+
 ## Endpoints
 
-- `GET /articles`
-- `GET /articles/{article_id}`
-- `GET /article-clusters`
-- `GET /article-clusters?include_article_ids=true`
-- `GET /article-clusters?cluster_date=YYYY-MM-DD`
-- `GET /article-clusters?cluster_date=YYYY-MM-DD&include_article_ids=true`
-- `GET /stories`
-- `GET /stories?story_date=YYYY-MM-DD`
-- `GET /sources_data`
-- `GET /top-locations`
-- `GET /health`
+### Admin
 
-### Response shapes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/status/` | Health check |
+| GET | `/admin/status/badge` | Status badge for shields.io |
 
-`GET /articles` returns a list of articles:
+### News - Stories
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/news/stories/` | List stories with full details |
+| GET | `/news/stories/news-feed` | Story cards for news feed UI |
+| GET | `/news/stories/{story_id}` | Get a single story by ID |
+
+### News - Articles
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/news/articles/` | List articles |
+| GET | `/news/articles/{article_id}` | Get a single article by ID |
+
+### News - Analytics
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/news/analytics/top-locations` | Top mentioned locations |
+| GET | `/news/analytics/top-people` | Top mentioned people |
+| GET | `/news/analytics/top-organizations` | Top mentioned organizations |
+
+### News - Sources
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/news/sources/` | List all news sources |
+
+## Response Shapes
+
+### `GET /admin/status/`
+
+```json
+{
+  "status": "ok"
+}
+```
+
+### `GET /admin/status/badge`
+
+```json
+{
+  "schemaVersion": 1,
+  "label": "api",
+  "message": "healthy",
+  "color": "brightgreen"
+}
+```
+
+### `GET /news/articles/`
 
 ```json
 [
@@ -65,69 +127,22 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
     "summary": "string",
     "url": "string",
     "published_at": "2024-01-01T12:00:00Z",
-    "ingested_at": "2024-01-01T12:05:00Z",
-    "text": "string or null"
+    "ingested_at": "2024-01-01T12:05:00Z"
   }
 ]
 ```
 
-`GET /articles/{article_id}` returns a single article:
-
-```json
-{
-  "id": "string",
-  "source": "string",
-  "title": "string",
-  "summary": "string",
-  "url": "string",
-  "published_at": "2024-01-01T12:00:00Z",
-  "ingested_at": "2024-01-01T12:05:00Z",
-  "text": "string or null"
-}
-```
-
-`GET /article-clusters` returns a list of clusters:
-
-```json
-[
-  {
-    "article_cluster_id": "string",
-    "cluster_period": "2024-01-01T00:00:00Z"
-  }
-]
-```
-
-`GET /article-clusters?include_article_ids=true` returns clusters with article IDs:
-
-```json
-[
-  {
-    "article_cluster_id": "string",
-    "cluster_period": "2024-01-01T00:00:00Z",
-    "article_ids": ["string"]
-  }
-]
-```
-
-`GET /health`:
-
-```json
-{
-  "status": "ok"
-}
-```
-
-`GET /stories` returns a list of stories:
+### `GET /news/stories/`
 
 ```json
 [
   {
     "story_id": "47cb5ca6",
-    "title": "Sparklers held near ceiling started Swiss ski resort fire, investigators believe",
-    "summary": "A fire at a Swiss ski resort is believed to have been started by sparklers...",
+    "title": "Example story title",
+    "summary": "A summary of the story...",
     "key_points": [
-      "Fire started by sparklers held near ceiling",
-      "Multiple teenagers missing after the incident"
+      "First key point",
+      "Second key point"
     ],
     "primary_location": "Switzerland",
     "story_period": "2024-01-01T00:00:00Z",
@@ -136,47 +151,57 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
     "articles": [
       {
         "article_id": "e6489b58bc3e7fb4",
-        "headline": "'Living a nightmare': Families of teens missing after ski resort fire desperate for news",
+        "headline": "Article headline",
         "source": "bbc",
         "url": "https://www.bbc.com/news/articles/example",
-        "image_url": "https://www.bbc.com/images/example.jpg"
-      }
-    ],
-    "sub_stories": [
-      {
-        "story_id": "sub_123",
-        "title": "Investigation into fire cause"
+        "image_url": "https://example.com/image.jpg"
       }
     ]
   }
 ]
 ```
 
-`GET /sources_data` returns a list of sources:
+### `GET /news/stories/news-feed`
 
 ```json
 [
   {
-    "source": "BBC",
+    "story_id": "47cb5ca6",
+    "title": "Example story title",
+    "primary_location": "Switzerland",
+    "article_count": 5,
+    "sources_count": 3,
+    "story_period": "2024-01-01",
+    "updated_at": "2024-01-01T14:00:00Z",
+    "image_url": "https://example.com/image.jpg"
+  }
+]
+```
+
+### `GET /news/analytics/top-locations` (and other analytics endpoints)
+
+```json
+[
+  {
+    "type": "location",
+    "name": "Switzerland",
+    "count": 12
+  }
+]
+```
+
+### `GET /news/sources/`
+
+```json
+[
+  {
+    "source": "bbc",
     "name": "BBC News",
     "url": "https://feeds.bbci.co.uk/news/rss.xml",
     "bias": "center",
     "owner": "BBC",
     "state_media": true,
     "based": "UK"
-  }
-]
-```
-
-`GET /top-locations` returns daily location counts for the last 7 days:
-
-```json
-[
-  {
-    "date": "2024-01-01",
-    "location": "Switzerland",
-    "article_count": 12,
-    "iso3": "CHE"
   }
 ]
 ```

@@ -1,13 +1,10 @@
-from fastapi import APIRouter
+from typing import List
+from app.schemas.news import NewsSource
 
-from app.schemas import SourceOut
 
-
-router = APIRouter()
-
-SOURCES: list[SourceOut] = [
+SOURCES: List[NewsSource] = [
     # BBC
-    SourceOut(
+    NewsSource(
         source="BBC",
         name="BBC News",
         url="https://feeds.bbci.co.uk/news/rss.xml",
@@ -16,7 +13,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="BBC",
         name="BBC World",
         url="https://feeds.bbci.co.uk/news/world/rss.xml",
@@ -25,7 +22,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="BBC",
         name="BBC Business",
         url="https://feeds.bbci.co.uk/news/business/rss.xml",
@@ -34,7 +31,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="BBC",
         name="BBC Technology",
         url="https://feeds.bbci.co.uk/news/technology/rss.xml",
@@ -44,7 +41,7 @@ SOURCES: list[SourceOut] = [
         based="UK",
     ),
     # CNN
-    SourceOut(
+    NewsSource(
         source="CNN",
         name="CNN",
         url="http://rss.cnn.com/rss/edition.rss",
@@ -53,7 +50,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="CNN",
         name="CNN World",
         url="http://rss.cnn.com/rss/edition_world.rss",
@@ -62,7 +59,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="CNN",
         name="CNN US",
         url="http://rss.cnn.com/rss/edition_us.rss",
@@ -71,7 +68,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="CNN",
         name="CNN Business",
         url="http://rss.cnn.com/rss/money_news_international.rss",
@@ -80,7 +77,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="CNN",
         name="CNN Technology",
         url="http://rss.cnn.com/rss/edition_technology.rss",
@@ -90,7 +87,7 @@ SOURCES: list[SourceOut] = [
         based="US",
     ),
     # Fox News
-    SourceOut(
+    NewsSource(
         source="Fox News",
         name="Fox News",
         url="https://moxie.foxnews.com/google-publisher/latest.xml",
@@ -99,7 +96,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="Fox News",
         name="Fox News World",
         url="https://moxie.foxnews.com/google-publisher/world.xml",
@@ -108,7 +105,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="Fox News",
         name="Fox News Politics",
         url="https://moxie.foxnews.com/google-publisher/politics.xml",
@@ -117,7 +114,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="Fox News",
         name="Fox News Science",
         url="https://moxie.foxnews.com/google-publisher/science.xml",
@@ -126,7 +123,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="Fox News",
         name="Fox News Tech",
         url="https://moxie.foxnews.com/google-publisher/tech.xml",
@@ -136,7 +133,7 @@ SOURCES: list[SourceOut] = [
         based="US",
     ),
     # The Guardian
-    SourceOut(
+    NewsSource(
         source="The Guardian",
         name="The Guardian World",
         url="https://www.theguardian.com/world/rss",
@@ -145,7 +142,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="The Guardian",
         name="The Guardian UK",
         url="https://www.theguardian.com/uk-news/rss",
@@ -154,7 +151,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="The Guardian",
         name="The Guardian US",
         url="https://www.theguardian.com/us-news/rss",
@@ -163,7 +160,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="The Guardian",
         name="The Guardian Business",
         url="https://www.theguardian.com/business/rss",
@@ -172,7 +169,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="The Guardian",
         name="The Guardian Technology",
         url="https://www.theguardian.com/technology/rss",
@@ -181,7 +178,7 @@ SOURCES: list[SourceOut] = [
         state_media=False,
         based="UK",
     ),
-    SourceOut(
+    NewsSource(
         source="The Guardian",
         name="The Guardian Politics",
         url="https://www.theguardian.com/politics/rss",
@@ -191,7 +188,7 @@ SOURCES: list[SourceOut] = [
         based="UK",
     ),
     # NPR
-    SourceOut(
+    NewsSource(
         source="NPR",
         name="NPR News",
         url="https://feeds.npr.org/1001/rss.xml",
@@ -200,7 +197,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="NPR",
         name="NPR National",
         url="https://feeds.npr.org/1003/rss.xml",
@@ -209,7 +206,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="NPR",
         name="NPR World",
         url="https://feeds.npr.org/1004/rss.xml",
@@ -218,7 +215,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="NPR",
         name="NPR Business",
         url="https://feeds.npr.org/1006/rss.xml",
@@ -227,7 +224,7 @@ SOURCES: list[SourceOut] = [
         state_media=True,
         based="US",
     ),
-    SourceOut(
+    NewsSource(
         source="NPR",
         name="NPR Technology",
         url="https://feeds.npr.org/1019/rss.xml",
@@ -237,7 +234,7 @@ SOURCES: list[SourceOut] = [
         based="US",
     ),
     # Sky News
-    SourceOut(
+    NewsSource(
         source="Sky News",
         name="Sky News",
         url="https://feeds.skynews.com/feeds/rss/home.xml",
@@ -247,7 +244,7 @@ SOURCES: list[SourceOut] = [
         based="UK",
     ),
     # The Telegraph
-    SourceOut(
+    NewsSource(
         source="The Telegraph",
         name="The Telegraph",
         url="https://www.telegraph.co.uk/rss.xml",
@@ -257,7 +254,7 @@ SOURCES: list[SourceOut] = [
         based="UK",
     ),
     # Yahoo News
-    SourceOut(
+    NewsSource(
         source="Yahoo News",
         name="Yahoo News",
         url="https://news.yahoo.com/rss/",
@@ -268,7 +265,5 @@ SOURCES: list[SourceOut] = [
     ),
 ]
 
-
-@router.get("/sources_data", response_model=list[SourceOut])
-def list_sources() -> list[SourceOut]:
-    return SOURCES
+def get_news_sources() -> List[NewsSource]:
+    pass
