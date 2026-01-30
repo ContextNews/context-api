@@ -2,9 +2,9 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.schemas.news import EntityCount
-from app.queries.news.analytics_queries import query_top_entities
-from app.schemas.enums import FilterPeriod, FilterRegion
+from app.schemas.news import EntityCount, HistoricalEntityCount
+from app.queries.news.analytics_queries import query_top_entities, query_top_entities_with_history
+from app.schemas.enums import FilterPeriod, FilterRegion, Interval
 from app.services.utils.date_utils import get_date_range
 
 
@@ -15,8 +15,21 @@ def get_top_locations(
     from_date: date | None = None,
     to_date: date | None = None,
     limit: int | None = None,
-) -> list[EntityCount]:
+    interval: Interval | None = None,
+) -> list[EntityCount] | list[HistoricalEntityCount]:
     from_date, to_date = get_date_range(period, from_date, to_date)
+
+    if interval:
+        return query_top_entities_with_history(
+            db=db,
+            entity_type="gpe",
+            region=region,
+            from_date=from_date,
+            to_date=to_date,
+            limit=limit,
+            interval=interval,
+        )
+
     return query_top_entities(
         db=db,
         entity_type="gpe",
@@ -34,8 +47,21 @@ def get_top_people(
     from_date: date | None = None,
     to_date: date | None = None,
     limit: int | None = None,
-) -> list[EntityCount]:
+    interval: Interval | None = None,
+) -> list[EntityCount] | list[HistoricalEntityCount]:
     from_date, to_date = get_date_range(period, from_date, to_date)
+
+    if interval:
+        return query_top_entities_with_history(
+            db=db,
+            entity_type="person",
+            region=region,
+            from_date=from_date,
+            to_date=to_date,
+            limit=limit,
+            interval=interval,
+        )
+
     return query_top_entities(
         db=db,
         entity_type="person",
@@ -53,8 +79,21 @@ def get_top_organizations(
     from_date: date | None = None,
     to_date: date | None = None,
     limit: int | None = None,
-) -> list[EntityCount]:
+    interval: Interval | None = None,
+) -> list[EntityCount] | list[HistoricalEntityCount]:
     from_date, to_date = get_date_range(period, from_date, to_date)
+
+    if interval:
+        return query_top_entities_with_history(
+            db=db,
+            entity_type="org",
+            region=region,
+            from_date=from_date,
+            to_date=to_date,
+            limit=limit,
+            interval=interval,
+        )
+
     return query_top_entities(
         db=db,
         entity_type="org",

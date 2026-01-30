@@ -6,6 +6,19 @@ class EntityCount(BaseModel):
     name: str
     count: int
 
+
+class HistoricalEntityCountDataPoint(BaseModel):
+    timestamp: datetime
+    count: int
+
+
+class HistoricalEntityCount(BaseModel):
+    type: str
+    name: str
+    count: int
+    history: list[HistoricalEntityCountDataPoint]
+
+
 class NewsSource(BaseModel):
     source: str
     name: str

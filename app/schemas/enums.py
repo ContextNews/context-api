@@ -14,3 +14,8 @@ class FilterRegion(str, Enum):
     middle_east = "middle_east"
     asia = "asia"
     oceania = "oceania"
+
+
+class Interval(str, Enum):
+    hourly = "hourly"
+    daily = "daily"

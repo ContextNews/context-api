@@ -89,6 +89,14 @@ Most `/news` endpoints support these filtering parameters:
 | GET | `/news/analytics/top-people` | Top mentioned people |
 | GET | `/news/analytics/top-organizations` | Top mentioned organizations |
 
+Analytics endpoints support an additional `interval` parameter:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `interval` | enum | none | Historical breakdown: `hourly`, `daily` |
+
+When `interval` is provided, the response includes a `history` array with counts per time bucket.
+
 ### News - Sources
 
 | Method | Endpoint | Description |
@@ -180,12 +188,31 @@ Most `/news` endpoints support these filtering parameters:
 
 ### `GET /news/analytics/top-locations` (and other analytics endpoints)
 
+Without `interval` parameter:
+
 ```json
 [
   {
-    "type": "location",
-    "name": "Switzerland",
-    "count": 12
+    "type": "gpe",
+    "name": "United States",
+    "count": 542
+  }
+]
+```
+
+With `interval=daily` parameter:
+
+```json
+[
+  {
+    "type": "gpe",
+    "name": "United States",
+    "count": 542,
+    "history": [
+      {"timestamp": "2024-01-01T00:00:00Z", "count": 72},
+      {"timestamp": "2024-01-02T00:00:00Z", "count": 85},
+      {"timestamp": "2024-01-03T00:00:00Z", "count": 68}
+    ]
   }
 ]
 ```
