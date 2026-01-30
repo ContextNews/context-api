@@ -20,7 +20,6 @@ def get_top_locations(
     return query_top_entities(
         db=db,
         entity_type="gpe",
-        period=period,
         region=region,
         from_date=from_date,
         to_date=to_date,
@@ -40,7 +39,6 @@ def get_top_people(
     return query_top_entities(
         db=db,
         entity_type="person",
-        period=period,
         region=region,
         from_date=from_date,
         to_date=to_date,
@@ -60,7 +58,6 @@ def get_top_organizations(
     return query_top_entities(
         db=db,
         entity_type="org",
-        period=period,
         region=region,
         from_date=from_date,
         to_date=to_date,

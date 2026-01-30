@@ -266,4 +266,4 @@ SOURCES: List[NewsSource] = [
 ]
 
 def get_news_sources() -> List[NewsSource]:
-    pass
+    return SOURCES
