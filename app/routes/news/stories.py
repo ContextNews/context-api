@@ -15,7 +15,7 @@ from app.services.news.stories_service import (
 router = APIRouter(prefix="/stories")
 
 
-@router.get("/", response_model=list[NewsStory])
+@router.get("", response_model=list[NewsStory])
 async def list_stories(
     db: Session = Depends(get_db),
     period: FilterPeriod = FilterPeriod.today,

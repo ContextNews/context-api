@@ -14,7 +14,7 @@ from app.services.news.articles_service import (
 router = APIRouter(prefix="/articles")
 
 
-@router.get("/", response_model=list[NewsArticle])
+@router.get("", response_model=list[NewsArticle])
 def list_articles(
     db: Session = Depends(get_db),
     period: FilterPeriod = FilterPeriod.today,

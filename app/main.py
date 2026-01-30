@@ -8,6 +8,7 @@ app = FastAPI(
     title="Context API",
     root_path="/api",
     root_path_in_servers=False,
+    redirect_slashes=False,
 )
 app.add_middleware(
     CORSMiddleware,

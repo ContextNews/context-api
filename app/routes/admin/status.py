@@ -3,7 +3,7 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/status")
 
 
-@router.get("/")
+@router.get("")
 def status_check() -> dict[str, str]:
     return {"status": "ok"}
 
