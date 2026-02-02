@@ -31,7 +31,7 @@ async def list_stories(
     story_ids = [story.id for story in stories_db]
 
     article_rows = query_story_articles(db, story_ids)
-    location_rows = query_story_locations(db, story_ids)
+    locations_by_story = query_story_locations(db, story_ids)
 
     article_urls = list({row[4] for row in article_rows})
     url_to_image = await fetch_og_images(article_urls)
@@ -48,19 +48,6 @@ async def list_stories(
             )
         )
 
-    locations_by_story: dict[str, list[ArticleLocationSchema]] = {}
-    for story_id, qid, name, loc_type, country_code, lon, lat in location_rows:
-        locations_by_story.setdefault(story_id, []).append(
-            ArticleLocationSchema(
-                wikidata_qid=qid,
-                name=name,
-                location_type=loc_type,
-                country_code=country_code,
-                latitude=lat,
-                longitude=lon,
-            )
-        )
-
     stories: list[NewsStory] = []
     for story in stories_db:
         stories.append(
@@ -69,7 +56,10 @@ async def list_stories(
                 title=story.title,
                 summary=story.summary,
                 key_points=story.key_points or [],
-                locations=locations_by_story.get(story.id, []),
+                locations=[
+                    ArticleLocationSchema(**loc)
+                    for loc in locations_by_story.get(story.id, [])
+                ],
                 story_period=story.story_period,
                 generated_at=story.generated_at,
                 updated_at=story.updated_at,
@@ -86,7 +76,7 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
         return None
 
     article_rows = query_story_articles(db, [story_id])
-    location_rows = query_story_locations(db, [story_id])
+    locations_by_story = query_story_locations(db, [story_id])
 
     article_urls = list({row[4] for row in article_rows})
     url_to_image = await fetch_og_images(article_urls)
@@ -102,24 +92,15 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
         for _, article_id, title, source, url in article_rows
     ]
 
-    locations = [
-        ArticleLocationSchema(
-            wikidata_qid=qid,
-            name=name,
-            location_type=loc_type,
-            country_code=country_code,
-            latitude=lat,
-            longitude=lon,
-        )
-        for _, qid, name, loc_type, country_code, lon, lat in location_rows
-    ]
-
     return NewsStory(
         story_id=story.id,
         title=story.title,
         summary=story.summary,
         key_points=story.key_points or [],
-        locations=locations,
+        locations=[
+            ArticleLocationSchema(**loc)
+            for loc in locations_by_story.get(story_id, [])
+        ],
         story_period=story.story_period,
         generated_at=story.generated_at,
         updated_at=story.updated_at,
@@ -142,7 +123,7 @@ async def get_story_feed(
     story_ids = [story.id for story in stories_db]
 
     article_rows = query_story_articles(db, story_ids)
-    location_rows = query_story_locations(db, story_ids)
+    locations_by_story = query_story_locations(db, story_ids)
 
     # Get first image URL per story for the card
     article_urls = list({row[4] for row in article_rows})
@@ -159,26 +140,16 @@ async def get_story_feed(
         if story_id not in image_by_story:
             image_by_story[story_id] = url_to_image.get(url)
 
-    locations_by_story: dict[str, list[ArticleLocationSchema]] = {}
-    for story_id, qid, name, loc_type, country_code, lon, lat in location_rows:
-        locations_by_story.setdefault(story_id, []).append(
-            ArticleLocationSchema(
-                wikidata_qid=qid,
-                name=name,
-                location_type=loc_type,
-                country_code=country_code,
-                latitude=lat,
-                longitude=lon,
-            )
-        )
-
     cards: list[StoryCard] = []
     for story in stories_db:
         cards.append(
             StoryCard(
                 story_id=story.id,
                 title=story.title,
-                locations=locations_by_story.get(story.id, []),
+                locations=[
+                    ArticleLocationSchema(**loc)
+                    for loc in locations_by_story.get(story.id, [])
+                ],
                 article_count=article_counts.get(story.id, 0),
                 sources_count=len(sources_by_story.get(story.id, set())),
                 story_period=story.story_period.isoformat(),

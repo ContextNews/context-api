@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from geoalchemy2.functions import ST_X, ST_Y
+from sqlalchemy import func, literal_column
 from sqlalchemy.orm import Session
 
 from rds_postgres.models import Article, ArticleStory, Location, Story, StoryLocation
@@ -63,27 +63,38 @@ def query_story_articles(
     )
 
 
-def query_story_locations(
-    db: Session,
-    story_ids: list[str],
-) -> list[tuple[str, str, str, str, str | None, float, float]]:
-    """Query locations for multiple stories.
-
-    Returns tuples of (story_id, wikidata_qid, name, location_type, country_code, longitude, latitude)
+def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list]:
+    """
+    Query locations for a list of stories.
+    Returns a dict mapping story_id -> list of location data.
     """
     if not story_ids:
-        return []
-    return (
+        return {}
+
+    rows = (
         db.query(
             StoryLocation.story_id,
             Location.wikidata_qid,
             Location.name,
             Location.location_type,
             Location.country_code,
-            ST_X(Location.coordinates).label("longitude"),
-            ST_Y(Location.coordinates).label("latitude"),
+            func.ST_Y(literal_column("locations.coordinates::geometry")).label("latitude"),
+            func.ST_X(literal_column("locations.coordinates::geometry")).label("longitude"),
         )
         .join(Location, Location.wikidata_qid == StoryLocation.wikidata_qid)
         .filter(StoryLocation.story_id.in_(story_ids))
         .all()
     )
+
+    locations_by_story: dict[str, list] = {}
+    for row in rows:
+        locations_by_story.setdefault(row.story_id, []).append({
+            "wikidata_qid": row.wikidata_qid,
+            "name": row.name,
+            "location_type": row.location_type,
+            "country_code": row.country_code,
+            "latitude": row.latitude,
+            "longitude": row.longitude,
+        })
+
+    return locations_by_story
