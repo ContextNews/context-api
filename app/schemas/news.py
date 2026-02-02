@@ -28,10 +28,18 @@ class NewsSource(BaseModel):
     state_media: bool
     based: str
 
+class ArticleLocationSchema(BaseModel):
+    wikidata_qid: str
+    name: str
+    location_type: str
+    country_code: str | None = None
+    latitude: float
+    longitude: float
+
 class StoryCard(BaseModel):
     story_id: str
     title: str
-    primary_location: str | None
+    locations: list[ArticleLocationSchema] = []
     article_count: int
     sources_count: int
     story_period: str
@@ -50,19 +58,11 @@ class NewsStory(BaseModel):
     title: str
     summary: str
     key_points: list[str]
-    primary_location: str | None
+    locations: list[ArticleLocationSchema] = []
     story_period: datetime
     generated_at: datetime
     updated_at: datetime
     articles: list[NewsStoryArticle]
-
-class ArticleLocationSchema(BaseModel):
-    wikidata_qid: str
-    name: str
-    location_type: str
-    country_code: str | None = None
-    latitude: float
-    longitude: float
 
 
 class NewsArticle(BaseModel):
