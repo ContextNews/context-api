@@ -162,6 +162,7 @@ When `interval` is provided, the response includes a `history` array with counts
       "First key point",
       "Second key point"
     ],
+    "topics": ["Politics", "Economy"],
     "locations": [
       {
         "wikidata_qid": "Q39",
@@ -195,6 +196,7 @@ When `interval` is provided, the response includes a `history` array with counts
   {
     "story_id": "47cb5ca6",
     "title": "Example story title",
+    "topics": ["Politics", "Economy"],
     "locations": [
       {
         "wikidata_qid": "Q39",
