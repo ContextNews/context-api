@@ -2,9 +2,9 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.queries.news.articles_queries import query_articles, query_article_by_id
+from app.queries.news.articles_queries import query_articles, query_article_by_id, query_article_locations
 from app.schemas.enums import FilterPeriod, FilterRegion
-from app.schemas.news import NewsArticle
+from app.schemas.news import NewsArticle, ArticleLocationSchema
 from app.services.utils.date_utils import get_date_range
 
 
@@ -20,6 +20,9 @@ def list_articles(
 
     articles_db = query_articles(db, start, end, limit=limit)
 
+    article_ids = [article.id for article in articles_db]
+    locations_by_article = query_article_locations(db, article_ids)
+
     return [
         NewsArticle(
             id=article.id,
@@ -29,6 +32,10 @@ def list_articles(
             url=article.url,
             published_at=article.published_at,
             ingested_at=article.ingested_at,
+            locations=[
+                ArticleLocationSchema(**loc)
+                for loc in locations_by_article.get(article.id, [])
+            ],
         )
         for article in articles_db
     ]
@@ -39,6 +46,8 @@ def get_article(db: Session, article_id: str) -> NewsArticle | None:
     if not article:
         return None
 
+    locations_by_article = query_article_locations(db, [article_id])
+
     return NewsArticle(
         id=article.id,
         source=article.source,
@@ -47,4 +56,8 @@ def get_article(db: Session, article_id: str) -> NewsArticle | None:
         url=article.url,
         published_at=article.published_at,
         ingested_at=article.ingested_at,
+        locations=[
+            ArticleLocationSchema(**loc)
+            for loc in locations_by_article.get(article_id, [])
+        ],
     )

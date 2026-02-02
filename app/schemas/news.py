@@ -56,6 +56,15 @@ class NewsStory(BaseModel):
     updated_at: datetime
     articles: list[NewsStoryArticle]
 
+class ArticleLocationSchema(BaseModel):
+    wikidata_qid: str
+    name: str
+    location_type: str
+    country_code: str | None = None
+    latitude: float
+    longitude: float
+
+
 class NewsArticle(BaseModel):
     id: str
     source: str
@@ -64,4 +73,5 @@ class NewsArticle(BaseModel):
     url: str
     published_at: datetime
     ingested_at: datetime
+    locations: list[ArticleLocationSchema] = []
 
