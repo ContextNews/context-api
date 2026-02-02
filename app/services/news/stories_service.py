@@ -25,7 +25,7 @@ async def list_stories(
 ) -> list[NewsStory]:
     start, end = get_date_range(period, from_date, to_date)
 
-    stories_db = query_stories(db, start, end, limit=limit, parent_only=True)
+    stories_db = query_stories(db, start, end, region=region, limit=limit, parent_only=True)
     if not stories_db:
         return []
 
@@ -121,7 +121,7 @@ async def get_story_feed(
 ) -> list[StoryCard]:
     start, end = get_date_range(period, None, None)
 
-    stories_db = query_stories(db, start, end, limit=limit, parent_only=True)
+    stories_db = query_stories(db, start, end, region=region, limit=limit, parent_only=True)
     if not stories_db:
         return []
 
