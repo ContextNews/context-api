@@ -1,8 +1,6 @@
 from datetime import datetime
 
-from geoalchemy2 import Geometry
-from geoalchemy2.functions import ST_X, ST_Y
-from sqlalchemy import cast, desc
+from sqlalchemy import desc, func, literal_column
 from sqlalchemy.orm import Session
 
 from rds_postgres.models import Article, ArticleLocation, Location
@@ -45,8 +43,8 @@ def query_article_locations(db: Session, article_ids: list[str]) -> dict[str, li
             Location.name,
             Location.location_type,
             Location.country_code,
-            ST_Y(cast(Location.coordinates, Geometry)).label("latitude"),
-            ST_X(cast(Location.coordinates, Geometry)).label("longitude"),
+            func.ST_Y(literal_column("locations.coordinates::geometry")).label("latitude"),
+            func.ST_X(literal_column("locations.coordinates::geometry")).label("longitude"),
         )
         .join(Location, Location.wikidata_qid == ArticleLocation.wikidata_qid)
         .filter(ArticleLocation.article_id.in_(article_ids))
