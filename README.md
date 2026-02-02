@@ -135,7 +135,17 @@ When `interval` is provided, the response includes a `history` array with counts
     "summary": "string",
     "url": "string",
     "published_at": "2024-01-01T12:00:00Z",
-    "ingested_at": "2024-01-01T12:05:00Z"
+    "ingested_at": "2024-01-01T12:05:00Z",
+    "locations": [
+      {
+        "wikidata_qid": "Q39",
+        "name": "Switzerland",
+        "location_type": "country",
+        "country_code": "CHE",
+        "latitude": 46.8182,
+        "longitude": 8.2275
+      }
+    ]
   }
 ]
 ```
@@ -152,7 +162,16 @@ When `interval` is provided, the response includes a `history` array with counts
       "First key point",
       "Second key point"
     ],
-    "primary_location": "Switzerland",
+    "locations": [
+      {
+        "wikidata_qid": "Q39",
+        "name": "Switzerland",
+        "location_type": "country",
+        "country_code": "CHE",
+        "latitude": 46.8182,
+        "longitude": 8.2275
+      }
+    ],
     "story_period": "2024-01-01T00:00:00Z",
     "generated_at": "2024-01-01T12:00:00Z",
     "updated_at": "2024-01-01T14:00:00Z",
@@ -176,7 +195,16 @@ When `interval` is provided, the response includes a `history` array with counts
   {
     "story_id": "47cb5ca6",
     "title": "Example story title",
-    "primary_location": "Switzerland",
+    "locations": [
+      {
+        "wikidata_qid": "Q39",
+        "name": "Switzerland",
+        "location_type": "country",
+        "country_code": "CHE",
+        "latitude": 46.8182,
+        "longitude": 8.2275
+      }
+    ],
     "article_count": 5,
     "sources_count": 3,
     "story_period": "2024-01-01",
