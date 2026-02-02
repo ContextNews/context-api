@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import func, literal_column
 from sqlalchemy.orm import Session
 
-from rds_postgres.models import Article, ArticleStory, Location, Story, StoryLocation
+from rds_postgres.models import Article, ArticleStory, Location, Story, StoryLocation, StoryTopic
 
 
 def query_stories(
@@ -98,3 +98,24 @@ def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list]:
         })
 
     return locations_by_story
+
+
+def query_story_topics(db: Session, story_ids: list[str]) -> dict[str, list[str]]:
+    """
+    Query topics for a list of stories.
+    Returns a dict mapping story_id -> list of topic strings.
+    """
+    if not story_ids:
+        return {}
+
+    rows = (
+        db.query(StoryTopic.story_id, StoryTopic.topic)
+        .filter(StoryTopic.story_id.in_(story_ids))
+        .all()
+    )
+
+    topics_by_story: dict[str, list[str]] = {}
+    for row in rows:
+        topics_by_story.setdefault(row.story_id, []).append(row.topic)
+
+    return topics_by_story

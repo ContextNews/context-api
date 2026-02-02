@@ -39,6 +39,7 @@ class ArticleLocationSchema(BaseModel):
 class StoryCard(BaseModel):
     story_id: str
     title: str
+    topics: list[str] = []
     locations: list[ArticleLocationSchema] = []
     article_count: int
     sources_count: int
@@ -58,6 +59,7 @@ class NewsStory(BaseModel):
     title: str
     summary: str
     key_points: list[str]
+    topics: list[str] = []
     locations: list[ArticleLocationSchema] = []
     story_period: datetime
     generated_at: datetime

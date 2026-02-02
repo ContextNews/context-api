@@ -7,6 +7,7 @@ from app.queries.news.stories_queries import (
     query_story_by_id,
     query_story_articles,
     query_story_locations,
+    query_story_topics,
 )
 from app.schemas.enums import FilterPeriod, FilterRegion
 from app.schemas.news import ArticleLocationSchema, NewsStory, NewsStoryArticle, StoryCard
@@ -32,6 +33,7 @@ async def list_stories(
 
     article_rows = query_story_articles(db, story_ids)
     locations_by_story = query_story_locations(db, story_ids)
+    topics_by_story = query_story_topics(db, story_ids)
 
     article_urls = list({row[4] for row in article_rows})
     url_to_image = await fetch_og_images(article_urls)
@@ -56,6 +58,7 @@ async def list_stories(
                 title=story.title,
                 summary=story.summary,
                 key_points=story.key_points or [],
+                topics=topics_by_story.get(story.id, []),
                 locations=[
                     ArticleLocationSchema(**loc)
                     for loc in locations_by_story.get(story.id, [])
@@ -77,6 +80,7 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
 
     article_rows = query_story_articles(db, [story_id])
     locations_by_story = query_story_locations(db, [story_id])
+    topics_by_story = query_story_topics(db, [story_id])
 
     article_urls = list({row[4] for row in article_rows})
     url_to_image = await fetch_og_images(article_urls)
@@ -97,6 +101,7 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
         title=story.title,
         summary=story.summary,
         key_points=story.key_points or [],
+        topics=topics_by_story.get(story_id, []),
         locations=[
             ArticleLocationSchema(**loc)
             for loc in locations_by_story.get(story_id, [])
@@ -124,6 +129,7 @@ async def get_story_feed(
 
     article_rows = query_story_articles(db, story_ids)
     locations_by_story = query_story_locations(db, story_ids)
+    topics_by_story = query_story_topics(db, story_ids)
 
     # Get first image URL per story for the card
     article_urls = list({row[4] for row in article_rows})
@@ -146,6 +152,7 @@ async def get_story_feed(
             StoryCard(
                 story_id=story.id,
                 title=story.title,
+                topics=topics_by_story.get(story.id, []),
                 locations=[
                     ArticleLocationSchema(**loc)
                     for loc in locations_by_story.get(story.id, [])
