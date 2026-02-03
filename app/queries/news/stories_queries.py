@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import func, literal_column
 from sqlalchemy.orm import Session
 
-from app.schemas.enums import FilterRegion
+from app.schemas.enums import FilterRegion, FilterTopic
 from rds_postgres.models import Article, ArticleStory, Location, Story, StoryLocation, StoryTopic
 
 # Mapping of ISO 3166-1 alpha-3 country codes to regions
@@ -56,6 +56,7 @@ def query_stories(
     from_date: datetime,
     to_date: datetime,
     region: FilterRegion | None = None,
+    topic: FilterTopic | None = None,
     limit: int | None = None,
     parent_only: bool = True,
 ) -> list[Story]:
@@ -73,6 +74,13 @@ def query_stories(
             query.join(StoryLocation, StoryLocation.story_id == Story.id)
             .join(Location, Location.wikidata_qid == StoryLocation.wikidata_qid)
             .filter(Location.country_code.in_(country_codes))
+            .distinct()
+        )
+
+    if topic:
+        query = (
+            query.join(StoryTopic, StoryTopic.story_id == Story.id)
+            .filter(StoryTopic.topic == topic.value)
             .distinct()
         )
 

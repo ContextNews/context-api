@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.schemas.enums import FilterPeriod, FilterRegion
+from app.schemas.enums import FilterPeriod, FilterRegion, FilterTopic
 from app.schemas.news import NewsStory, StoryCard
 from app.services.news.stories_service import (
     list_stories as list_stories_service,
@@ -20,6 +20,7 @@ async def list_stories(
     db: Session = Depends(get_db),
     period: FilterPeriod = FilterPeriod.today,
     region: FilterRegion | None = None,
+    topic: FilterTopic | None = None,
     from_date: date | None = None,
     to_date: date | None = None,
     limit: int | None = Query(None, ge=1, le=100),
@@ -28,6 +29,7 @@ async def list_stories(
         db=db,
         period=period,
         region=region,
+        topic=topic,
         from_date=from_date,
         to_date=to_date,
         limit=limit,
@@ -39,12 +41,14 @@ async def get_story_feed(
     db: Session = Depends(get_db),
     period: FilterPeriod = FilterPeriod.today,
     region: FilterRegion | None = None,
+    topic: FilterTopic | None = None,
     limit: int | None = Query(None, ge=1, le=100),
 ) -> list[StoryCard]:
     return await get_story_feed_service(
         db=db,
         period=period,
         region=region,
+        topic=topic,
         limit=limit,
     )
 

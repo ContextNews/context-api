@@ -9,7 +9,7 @@ from app.queries.news.stories_queries import (
     query_story_locations,
     query_story_topics,
 )
-from app.schemas.enums import FilterPeriod, FilterRegion
+from app.schemas.enums import FilterPeriod, FilterRegion, FilterTopic
 from app.schemas.news import ArticleLocationSchema, NewsStory, NewsStoryArticle, StoryCard
 from app.services.utils.date_utils import get_date_range
 from app.services.utils.image_fetcher import fetch_og_images
@@ -19,13 +19,14 @@ async def list_stories(
     db: Session,
     period: FilterPeriod,
     region: FilterRegion | None = None,
+    topic: FilterTopic | None = None,
     from_date: date | None = None,
     to_date: date | None = None,
     limit: int | None = None,
 ) -> list[NewsStory]:
     start, end = get_date_range(period, from_date, to_date)
 
-    stories_db = query_stories(db, start, end, region=region, limit=limit, parent_only=True)
+    stories_db = query_stories(db, start, end, region=region, topic=topic, limit=limit, parent_only=True)
     if not stories_db:
         return []
 
@@ -117,11 +118,12 @@ async def get_story_feed(
     db: Session,
     period: FilterPeriod,
     region: FilterRegion | None = None,
+    topic: FilterTopic | None = None,
     limit: int | None = None,
 ) -> list[StoryCard]:
     start, end = get_date_range(period, None, None)
 
-    stories_db = query_stories(db, start, end, region=region, limit=limit, parent_only=True)
+    stories_db = query_stories(db, start, end, region=region, topic=topic, limit=limit, parent_only=True)
     if not stories_db:
         return []
 

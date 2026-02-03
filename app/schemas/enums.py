@@ -16,6 +16,20 @@ class FilterRegion(str, Enum):
     oceania = "oceania"
 
 
+class FilterTopic(str, Enum):
+    politics = "Politics"
+    conflict_and_security = "Conflict & Security"
+    crime = "Crime"
+    business = "Business"
+    economy = "Economy"
+    technology = "Technology"
+    health = "Health"
+    environment = "Environment"
+    society = "Society"
+    sports = "Sports"
+    entertainment = "Entertainment"
+
+
 class Interval(str, Enum):
     hourly = "hourly"
     daily = "daily"
