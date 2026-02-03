@@ -6,47 +6,47 @@ from sqlalchemy.orm import Session
 from app.schemas.enums import FilterRegion
 from rds_postgres.models import Article, ArticleStory, Location, Story, StoryLocation, StoryTopic
 
-# Mapping of country codes to regions
+# Mapping of ISO 3166-1 alpha-3 country codes to regions
 REGION_COUNTRY_CODES: dict[FilterRegion, set[str]] = {
     FilterRegion.north_america: {
-        "US", "CA", "MX", "GT", "BZ", "HN", "SV", "NI", "CR", "PA",
-        "CU", "JM", "HT", "DO", "PR", "TT", "BS", "BB", "AG", "DM",
-        "GD", "KN", "LC", "VC", "AW", "CW", "SX", "BQ", "AI", "VG",
-        "VI", "KY", "TC", "BM", "GL", "PM", "MQ", "GP", "MF", "BL",
+        "USA", "CAN", "MEX", "GTM", "BLZ", "HND", "SLV", "NIC", "CRI", "PAN",
+        "CUB", "JAM", "HTI", "DOM", "PRI", "TTO", "BHS", "BRB", "ATG", "DMA",
+        "GRD", "KNA", "LCA", "VCT", "ABW", "CUW", "SXM", "BES", "AIA", "VGB",
+        "VIR", "CYM", "TCA", "BMU", "GRL", "SPM", "MTQ", "GLP", "MAF", "BLM",
     },
     FilterRegion.south_america: {
-        "BR", "AR", "CO", "PE", "VE", "CL", "EC", "BO", "PY", "UY",
-        "GY", "SR", "GF", "FK",
+        "BRA", "ARG", "COL", "PER", "VEN", "CHL", "ECU", "BOL", "PRY", "URY",
+        "GUY", "SUR", "GUF", "FLK",
     },
     FilterRegion.europe: {
-        "GB", "DE", "FR", "IT", "ES", "PT", "NL", "BE", "AT", "CH",
-        "SE", "NO", "DK", "FI", "IE", "PL", "CZ", "HU", "RO", "BG",
-        "GR", "HR", "SK", "SI", "EE", "LV", "LT", "CY", "MT", "LU",
-        "IS", "AD", "MC", "SM", "VA", "LI", "AL", "BA", "ME", "MK",
-        "RS", "XK", "UA", "BY", "MD", "RU", "GE", "AM", "AZ",
+        "GBR", "DEU", "FRA", "ITA", "ESP", "PRT", "NLD", "BEL", "AUT", "CHE",
+        "SWE", "NOR", "DNK", "FIN", "IRL", "POL", "CZE", "HUN", "ROU", "BGR",
+        "GRC", "HRV", "SVK", "SVN", "EST", "LVA", "LTU", "CYP", "MLT", "LUX",
+        "ISL", "AND", "MCO", "SMR", "VAT", "LIE", "ALB", "BIH", "MNE", "MKD",
+        "SRB", "XKX", "UKR", "BLR", "MDA", "RUS", "GEO", "ARM", "AZE",
     },
     FilterRegion.africa: {
-        "ZA", "NG", "EG", "KE", "ET", "GH", "TZ", "UG", "DZ", "MA",
-        "TN", "LY", "SD", "SS", "AO", "MZ", "ZW", "ZM", "BW", "NA",
-        "SN", "CI", "CM", "CD", "CG", "GA", "GQ", "CF", "TD", "NE",
-        "ML", "BF", "BJ", "TG", "GN", "SL", "LR", "GM", "GW", "CV",
-        "MR", "ER", "DJ", "SO", "RW", "BI", "MW", "LS", "SZ", "MG",
-        "MU", "SC", "KM", "RE", "YT", "ST",
+        "ZAF", "NGA", "EGY", "KEN", "ETH", "GHA", "TZA", "UGA", "DZA", "MAR",
+        "TUN", "LBY", "SDN", "SSD", "AGO", "MOZ", "ZWE", "ZMB", "BWA", "NAM",
+        "SEN", "CIV", "CMR", "COD", "COG", "GAB", "GNQ", "CAF", "TCD", "NER",
+        "MLI", "BFA", "BEN", "TGO", "GIN", "SLE", "LBR", "GMB", "GNB", "CPV",
+        "MRT", "ERI", "DJI", "SOM", "RWA", "BDI", "MWI", "LSO", "SWZ", "MDG",
+        "MUS", "SYC", "COM", "REU", "MYT", "STP",
     },
     FilterRegion.middle_east: {
-        "SA", "AE", "QA", "KW", "BH", "OM", "YE", "IQ", "IR", "SY",
-        "JO", "LB", "IL", "PS", "TR",
+        "SAU", "ARE", "QAT", "KWT", "BHR", "OMN", "YEM", "IRQ", "IRN", "SYR",
+        "JOR", "LBN", "ISR", "PSE", "TUR",
     },
     FilterRegion.asia: {
-        "CN", "JP", "KR", "KP", "IN", "PK", "BD", "LK", "NP", "BT",
-        "MM", "TH", "VN", "LA", "KH", "MY", "SG", "ID", "PH", "BN",
-        "TL", "MN", "KZ", "UZ", "TM", "KG", "TJ", "AF", "MV", "HK",
-        "MO", "TW",
+        "CHN", "JPN", "KOR", "PRK", "IND", "PAK", "BGD", "LKA", "NPL", "BTN",
+        "MMR", "THA", "VNM", "LAO", "KHM", "MYS", "SGP", "IDN", "PHL", "BRN",
+        "TLS", "MNG", "KAZ", "UZB", "TKM", "KGZ", "TJK", "AFG", "MDV", "HKG",
+        "MAC", "TWN",
     },
     FilterRegion.oceania: {
-        "AU", "NZ", "PG", "FJ", "SB", "VU", "NC", "PF", "WS", "TO",
-        "FM", "MH", "PW", "KI", "NR", "TV", "CK", "NU", "TK", "AS",
-        "GU", "MP", "WF",
+        "AUS", "NZL", "PNG", "FJI", "SLB", "VUT", "NCL", "PYF", "WSM", "TON",
+        "FSM", "MHL", "PLW", "KIR", "NRU", "TUV", "COK", "NIU", "TKL", "ASM",
+        "GUM", "MNP", "WLF",
     },
 }
 
