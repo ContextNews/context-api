@@ -78,6 +78,18 @@ class NewsStory(BaseModel):
     articles: list[NewsStoryArticle]
 
 
+class RelatedStorySchema(BaseModel):
+    story_id: str
+    title: str
+    summary: str
+    story_period: datetime
+    updated_at: datetime
+
+
+class NewsStoryWithRelated(NewsStory):
+    related_stories: list[RelatedStorySchema] = []
+
+
 class NewsArticle(BaseModel):
     id: str
     source: str

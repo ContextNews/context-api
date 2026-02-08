@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.schemas.enums import FilterPeriod, FilterRegion, FilterTopic
-from app.schemas.news import NewsStory, StoryCard
+from app.schemas.news import NewsStory, NewsStoryWithRelated, StoryCard
 from app.services.news.stories_service import (
     list_stories as list_stories_service,
     get_story as get_story_service,
@@ -53,11 +53,11 @@ async def get_story_feed(
     )
 
 
-@router.get("/{story_id}", response_model=NewsStory)
+@router.get("/{story_id}", response_model=NewsStoryWithRelated)
 async def get_story(
     story_id: str,
     db: Session = Depends(get_db),
-) -> NewsStory:
+) -> NewsStoryWithRelated:
     story = await get_story_service(db=db, story_id=story_id)
     if not story:
         raise HTTPException(status_code=404, detail="Story not found")

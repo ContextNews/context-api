@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from app.queries.news.stories_queries import (
+    query_related_stories,
     query_stories,
     query_story_by_id,
     query_story_articles,
@@ -15,6 +16,8 @@ from app.schemas.news import (
     ArticleLocationSchema,
     NewsStory,
     NewsStoryArticle,
+    NewsStoryWithRelated,
+    RelatedStorySchema,
     StoryCard,
     StoryPersonSchema,
 )
@@ -86,7 +89,7 @@ async def list_stories(
     return stories
 
 
-async def get_story(db: Session, story_id: str) -> NewsStory | None:
+async def get_story(db: Session, story_id: str) -> NewsStoryWithRelated | None:
     story = query_story_by_id(db, story_id)
     if not story:
         return None
@@ -95,6 +98,7 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
     locations_by_story = query_story_locations(db, [story_id])
     persons_by_story = query_story_persons(db, [story_id])
     topics_by_story = query_story_topics(db, [story_id])
+    related_stories_db = query_related_stories(db, story_id)
 
     article_urls = list({row[4] for row in article_rows})
     url_to_image = await fetch_og_images(article_urls)
@@ -110,7 +114,18 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
         for _, article_id, title, source, url in article_rows
     ]
 
-    return NewsStory(
+    related_stories = [
+        RelatedStorySchema(
+            story_id=related_story.id,
+            title=related_story.title,
+            summary=related_story.summary,
+            story_period=related_story.story_period,
+            updated_at=related_story.updated_at,
+        )
+        for related_story in related_stories_db
+    ]
+
+    return NewsStoryWithRelated(
         story_id=story.id,
         title=story.title,
         summary=story.summary,
@@ -128,6 +143,7 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
         generated_at=story.generated_at,
         updated_at=story.updated_at,
         articles=articles,
+        related_stories=related_stories,
     )
 
 

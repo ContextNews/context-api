@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func, literal_column
+from sqlalchemy import func, literal_column, or_
 from sqlalchemy.orm import Session
 
 from app.schemas.enums import FilterRegion, FilterTopic
@@ -12,6 +12,7 @@ from rds_postgres.models import (
     Story,
     StoryLocation,
     StoryPerson,
+    StoryStory,
     StoryTopic,
 )
 
@@ -103,6 +104,29 @@ def query_stories(
 
 def query_story_by_id(db: Session, story_id: str) -> Story | None:
     return db.query(Story).filter(Story.id == story_id).first()
+
+
+def query_related_stories(db: Session, story_id: str) -> list[Story]:
+    return (
+        db.query(Story)
+        .join(
+            StoryStory,
+            or_(
+                StoryStory.story_id_1 == Story.id,
+                StoryStory.story_id_2 == Story.id,
+            ),
+        )
+        .filter(
+            or_(
+                StoryStory.story_id_1 == story_id,
+                StoryStory.story_id_2 == story_id,
+            ),
+            Story.id != story_id,
+        )
+        .distinct()
+        .order_by(Story.story_period.desc())
+        .all()
+    )
 
 
 def query_sub_stories(db: Session, parent_story_ids: list[str]) -> list[Story]:

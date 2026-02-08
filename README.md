@@ -198,6 +198,24 @@ When `interval` is provided, the response includes a `history` array with counts
 ]
 ```
 
+### `GET /news/stories/{story_id}`
+
+Returns the same shape as `GET /news/stories/` plus:
+
+```json
+{
+  "related_stories": [
+    {
+      "story_id": "a1b2c3d4",
+      "title": "Related story title",
+      "summary": "A summary of the related story...",
+      "story_period": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T14:00:00Z"
+    }
+  ]
+}
+```
+
 ### `GET /news/stories/news-feed`
 
 ```json
