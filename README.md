@@ -70,7 +70,7 @@ Most `/news` endpoints support these filtering parameters:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/news/stories/` | List stories with full details |
+| GET | `/news/stories/` | List stories with full details (including persons) |
 | GET | `/news/stories/news-feed` | Story cards for news feed UI |
 | GET | `/news/stories/{story_id}` | Get a single story by ID |
 
@@ -173,6 +173,15 @@ When `interval` is provided, the response includes a `history` array with counts
         "longitude": 8.2275
       }
     ],
+    "persons": [
+      {
+        "wikidata_qid": "Q76",
+        "name": "Barack Obama",
+        "description": "44th president of the United States",
+        "nationalities": ["United States"],
+        "image_url": "https://upload.wikimedia.org/example.jpg"
+      }
+    ],
     "story_period": "2024-01-01T00:00:00Z",
     "generated_at": "2024-01-01T12:00:00Z",
     "updated_at": "2024-01-01T14:00:00Z",
@@ -205,6 +214,15 @@ When `interval` is provided, the response includes a `history` array with counts
         "country_code": "CHE",
         "latitude": 46.8182,
         "longitude": 8.2275
+      }
+    ],
+    "persons": [
+      {
+        "wikidata_qid": "Q76",
+        "name": "Barack Obama",
+        "description": "44th president of the United States",
+        "nationalities": ["United States"],
+        "image_url": "https://upload.wikimedia.org/example.jpg"
       }
     ],
     "article_count": 5,
