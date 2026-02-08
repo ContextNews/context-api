@@ -7,10 +7,17 @@ from app.queries.news.stories_queries import (
     query_story_by_id,
     query_story_articles,
     query_story_locations,
+    query_story_persons,
     query_story_topics,
 )
 from app.schemas.enums import FilterPeriod, FilterRegion, FilterTopic
-from app.schemas.news import ArticleLocationSchema, NewsStory, NewsStoryArticle, StoryCard
+from app.schemas.news import (
+    ArticleLocationSchema,
+    NewsStory,
+    NewsStoryArticle,
+    StoryCard,
+    StoryPersonSchema,
+)
 from app.services.utils.date_utils import get_date_range
 from app.services.utils.image_fetcher import fetch_og_images
 
@@ -34,6 +41,7 @@ async def list_stories(
 
     article_rows = query_story_articles(db, story_ids)
     locations_by_story = query_story_locations(db, story_ids)
+    persons_by_story = query_story_persons(db, story_ids)
     topics_by_story = query_story_topics(db, story_ids)
 
     article_urls = list({row[4] for row in article_rows})
@@ -64,6 +72,10 @@ async def list_stories(
                     ArticleLocationSchema(**loc)
                     for loc in locations_by_story.get(story.id, [])
                 ],
+                persons=[
+                    StoryPersonSchema(**person)
+                    for person in persons_by_story.get(story.id, [])
+                ],
                 story_period=story.story_period,
                 generated_at=story.generated_at,
                 updated_at=story.updated_at,
@@ -81,6 +93,7 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
 
     article_rows = query_story_articles(db, [story_id])
     locations_by_story = query_story_locations(db, [story_id])
+    persons_by_story = query_story_persons(db, [story_id])
     topics_by_story = query_story_topics(db, [story_id])
 
     article_urls = list({row[4] for row in article_rows})
@@ -107,6 +120,10 @@ async def get_story(db: Session, story_id: str) -> NewsStory | None:
             ArticleLocationSchema(**loc)
             for loc in locations_by_story.get(story_id, [])
         ],
+        persons=[
+            StoryPersonSchema(**person)
+            for person in persons_by_story.get(story_id, [])
+        ],
         story_period=story.story_period,
         generated_at=story.generated_at,
         updated_at=story.updated_at,
@@ -131,6 +148,7 @@ async def get_story_feed(
 
     article_rows = query_story_articles(db, story_ids)
     locations_by_story = query_story_locations(db, story_ids)
+    persons_by_story = query_story_persons(db, story_ids)
     topics_by_story = query_story_topics(db, story_ids)
 
     # Get first image URL per story for the card
@@ -158,6 +176,10 @@ async def get_story_feed(
                 locations=[
                     ArticleLocationSchema(**loc)
                     for loc in locations_by_story.get(story.id, [])
+                ],
+                persons=[
+                    StoryPersonSchema(**person)
+                    for person in persons_by_story.get(story.id, [])
                 ],
                 article_count=article_counts.get(story.id, 0),
                 sources_count=len(sources_by_story.get(story.id, set())),

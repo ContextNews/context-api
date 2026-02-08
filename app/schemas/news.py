@@ -36,11 +36,21 @@ class ArticleLocationSchema(BaseModel):
     latitude: float
     longitude: float
 
+
+class StoryPersonSchema(BaseModel):
+    wikidata_qid: str
+    name: str
+    description: str | None = None
+    nationalities: list[str] | None = None
+    image_url: str | None = None
+
+
 class StoryCard(BaseModel):
     story_id: str
     title: str
     topics: list[str] = []
     locations: list[ArticleLocationSchema] = []
+    persons: list[StoryPersonSchema] = []
     article_count: int
     sources_count: int
     story_period: str
@@ -61,6 +71,7 @@ class NewsStory(BaseModel):
     key_points: list[str]
     topics: list[str] = []
     locations: list[ArticleLocationSchema] = []
+    persons: list[StoryPersonSchema] = []
     story_period: datetime
     generated_at: datetime
     updated_at: datetime
@@ -76,4 +87,3 @@ class NewsArticle(BaseModel):
     published_at: datetime
     ingested_at: datetime
     locations: list[ArticleLocationSchema] = []
-

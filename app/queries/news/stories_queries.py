@@ -4,7 +4,16 @@ from sqlalchemy import func, literal_column
 from sqlalchemy.orm import Session
 
 from app.schemas.enums import FilterRegion, FilterTopic
-from rds_postgres.models import Article, ArticleStory, Location, Story, StoryLocation, StoryTopic
+from rds_postgres.models import (
+    Article,
+    ArticleStory,
+    Location,
+    Person,
+    Story,
+    StoryLocation,
+    StoryPerson,
+    StoryTopic,
+)
 
 # Mapping of ISO 3166-1 alpha-3 country codes to regions
 REGION_COUNTRY_CODES: dict[FilterRegion, set[str]] = {
@@ -182,3 +191,40 @@ def query_story_topics(db: Session, story_ids: list[str]) -> dict[str, list[str]
         topics_by_story.setdefault(row.story_id, []).append(row.topic)
 
     return topics_by_story
+
+
+def query_story_persons(db: Session, story_ids: list[str]) -> dict[str, list]:
+    """
+    Query persons for a list of stories.
+    Returns a dict mapping story_id -> list of person data.
+    """
+    if not story_ids:
+        return {}
+
+    rows = (
+        db.query(
+            StoryPerson.story_id,
+            Person.wikidata_qid,
+            Person.name,
+            Person.description,
+            Person.nationalities,
+            Person.image_url,
+        )
+        .join(Person, Person.wikidata_qid == StoryPerson.wikidata_qid)
+        .filter(StoryPerson.story_id.in_(story_ids))
+        .all()
+    )
+
+    persons_by_story: dict[str, list] = {}
+    for row in rows:
+        persons_by_story.setdefault(row.story_id, []).append(
+            {
+                "wikidata_qid": row.wikidata_qid,
+                "name": row.name,
+                "description": row.description,
+                "nationalities": row.nationalities,
+                "image_url": row.image_url,
+            }
+        )
+
+    return persons_by_story
