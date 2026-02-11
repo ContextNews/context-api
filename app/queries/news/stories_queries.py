@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func, literal_column, or_
+from sqlalchemy import func, literal_column, or_, text
 from sqlalchemy.orm import Session
 
 from app.schemas.enums import FilterRegion, FilterTopic
@@ -107,23 +107,36 @@ def query_story_by_id(db: Session, story_id: str) -> Story | None:
 
 
 def query_related_stories(db: Session, story_id: str) -> list[Story]:
+    """
+    Traverse the full story_stories graph using a recursive CTE
+    to find all transitively connected stories, not just direct neighbors.
+    """
+    related_ids = [
+        row[0]
+        for row in db.execute(
+            text("""
+                WITH RECURSIVE related AS (
+                    SELECT :story_id AS id
+                    UNION
+                    SELECT CASE
+                        WHEN ss.story_id_1 = related.id THEN ss.story_id_2
+                        ELSE ss.story_id_1
+                    END
+                    FROM story_stories ss
+                    JOIN related ON ss.story_id_1 = related.id OR ss.story_id_2 = related.id
+                )
+                SELECT id FROM related WHERE id != :story_id
+            """),
+            {"story_id": story_id},
+        ).fetchall()
+    ]
+
+    if not related_ids:
+        return []
+
     return (
         db.query(Story)
-        .join(
-            StoryStory,
-            or_(
-                StoryStory.story_id_1 == Story.id,
-                StoryStory.story_id_2 == Story.id,
-            ),
-        )
-        .filter(
-            or_(
-                StoryStory.story_id_1 == story_id,
-                StoryStory.story_id_2 == story_id,
-            ),
-            Story.id != story_id,
-        )
-        .distinct()
+        .filter(Story.id.in_(related_ids))
         .order_by(Story.story_period.desc())
         .all()
     )
