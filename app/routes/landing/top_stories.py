@@ -14,6 +14,6 @@ router = APIRouter(prefix="/top-stories")
 @router.get("", response_model=list[RegionTopStories])
 async def top_stories(
     db: Session = Depends(get_db),
-    period: FilterPeriod = FilterPeriod.today,
+    period: FilterPeriod = FilterPeriod.week,
 ) -> list[RegionTopStories]:
     return await get_top_stories_by_region_service(db=db, period=period)
