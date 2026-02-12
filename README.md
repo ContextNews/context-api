@@ -40,9 +40,10 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
 
 ## API Structure
 
-The API is organized into two main sections:
+The API is organized into three main sections:
 
 - `/admin` - Administrative endpoints (status checks)
+- `/landing` - Landing page endpoints (top stories by region)
 - `/news` - News data endpoints (stories, articles, analytics, sources)
 
 ### Common Query Parameters
@@ -65,6 +66,14 @@ Most `/news` endpoints support these filtering parameters:
 |--------|----------|-------------|
 | GET | `/admin/status/` | Health check |
 | GET | `/admin/status/badge` | Status badge for shields.io |
+
+### Landing
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/landing/top-stories` | Top 3 stories per region |
+
+The `top-stories` endpoint supports the `period` query parameter (default: `today`).
 
 ### News - Stories
 
@@ -122,6 +131,36 @@ When `interval` is provided, the response includes a `history` array with counts
   "message": "healthy",
   "color": "brightgreen"
 }
+```
+
+### `GET /landing/top-stories`
+
+```json
+[
+  {
+    "region": "north_america",
+    "stories": [
+      {
+        "story_id": "47cb5ca6",
+        "title": "Example story title",
+        "locations": [
+          {
+            "wikidata_qid": "Q30",
+            "name": "United States",
+            "location_type": "country",
+            "country_code": "USA",
+            "latitude": 39.8283,
+            "longitude": -98.5795
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "region": "south_america",
+    "stories": []
+  }
+]
 ```
 
 ### `GET /news/articles/`
