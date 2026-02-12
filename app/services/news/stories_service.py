@@ -98,7 +98,10 @@ async def get_story(db: Session, story_id: str) -> NewsStoryWithRelated | None:
     locations_by_story = query_story_locations(db, [story_id])
     persons_by_story = query_story_persons(db, [story_id])
     topics_by_story = query_story_topics(db, [story_id])
-    related_stories_db = query_related_stories(db, story_id)
+    try:
+        related_stories_db = query_related_stories(db, story_id)
+    except Exception:
+        related_stories_db = []
 
     article_urls = list({row[4] for row in article_rows})
     url_to_image = await fetch_og_images(article_urls)

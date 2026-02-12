@@ -116,14 +116,16 @@ def query_related_stories(db: Session, story_id: str) -> list[Story]:
         for row in db.execute(
             text("""
                 WITH RECURSIVE related AS (
-                    SELECT :story_id AS id
+                    SELECT CAST(:story_id AS varchar) AS id, 0 AS depth
                     UNION
                     SELECT CASE
                         WHEN ss.story_id_1 = related.id THEN ss.story_id_2
                         ELSE ss.story_id_1
-                    END
+                    END,
+                    related.depth + 1
                     FROM story_stories ss
-                    JOIN related ON ss.story_id_1 = related.id OR ss.story_id_2 = related.id
+                    JOIN related ON (ss.story_id_1 = related.id OR ss.story_id_2 = related.id)
+                        AND related.depth < 10
                 )
                 SELECT id FROM related WHERE id != :story_id
             """),
