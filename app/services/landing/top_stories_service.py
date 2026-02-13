@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy.orm import Session
 
 from app.queries.news.stories_queries import (
@@ -17,11 +19,13 @@ async def get_top_stories_by_region(
     start, end = get_date_range(period, None, None)
 
     # Query top 3 stories per region
-    stories_by_region: dict[FilterRegion, list] = {}
+    stories_by_region: dict[FilterRegion, list[Any]] = {}
     all_story_ids: list[str] = []
 
     for region in FilterRegion:
-        stories = query_stories(db, start, end, region=region, limit=3, parent_only=True)
+        stories = query_stories(
+            db, start, end, region=region, limit=3, parent_only=True
+        )
         stories_by_region[region] = stories
         all_story_ids.extend(story.id for story in stories)
 
@@ -34,9 +38,9 @@ async def get_top_stories_by_region(
     # Assemble response grouped by region
     result: list[RegionTopStories] = []
     for region in FilterRegion:
-        stories: list[LandingStory] = []
+        region_stories: list[LandingStory] = []
         for story in stories_by_region[region]:
-            stories.append(
+            region_stories.append(
                 LandingStory(
                     story_id=story.id,
                     title=story.title,
@@ -46,6 +50,6 @@ async def get_top_stories_by_region(
                     ],
                 )
             )
-        result.append(RegionTopStories(region=region.value, stories=stories))
+        result.append(RegionTopStories(region=region.value, stories=region_stories))
 
     return result

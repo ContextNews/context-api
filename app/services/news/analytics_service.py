@@ -2,9 +2,12 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.schemas.news import EntityCount, HistoricalEntityCount
-from app.queries.news.analytics_queries import query_top_entities, query_top_entities_with_history
+from app.queries.news.analytics_queries import (
+    query_top_entities,
+    query_top_entities_with_history,
+)
 from app.schemas.enums import FilterPeriod, FilterRegion, Interval
+from app.schemas.news import EntityCount, HistoricalEntityCount
 from app.services.utils.date_utils import get_date_range
 
 

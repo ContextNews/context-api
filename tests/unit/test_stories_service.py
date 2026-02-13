@@ -7,7 +7,6 @@ import pytest
 from app.schemas.enums import FilterPeriod
 from app.services.news.stories_service import get_story, get_story_feed, list_stories
 
-
 _SENTINEL = object()
 
 
@@ -33,7 +32,13 @@ def _make_story(
     )
 
 
-def _make_article_row(story_id="story1", article_id="art1", title="Headline", source="BBC", url="https://bbc.co.uk/1"):
+def _make_article_row(
+    story_id="story1",
+    article_id="art1",
+    title="Headline",
+    source="BBC",
+    url="https://bbc.co.uk/1",
+):
     return (story_id, article_id, title, source, url)
 
 
@@ -53,7 +58,10 @@ class TestListStories:
         assert result == []
 
     @pytest.mark.asyncio
-    @patch(f"{QUERIES}.fetch_og_images", return_value={"https://bbc.co.uk/1": "https://img.com/1.jpg"})
+    @patch(
+        f"{QUERIES}.fetch_og_images",
+        return_value={"https://bbc.co.uk/1": "https://img.com/1.jpg"},
+    )
     @patch(f"{QUERIES}.query_story_topics", return_value={"story1": ["Politics"]})
     @patch(f"{QUERIES}.query_story_persons", return_value={})
     @patch(f"{QUERIES}.query_story_locations", return_value={})
@@ -92,7 +100,9 @@ class TestListStories:
     @patch(f"{QUERIES}.query_story_locations")
     @patch(f"{QUERIES}.query_story_articles", return_value=[])
     @patch(f"{QUERIES}.query_stories")
-    async def test_story_with_locations(self, mock_stories, mock_articles, mock_locations, *_):
+    async def test_story_with_locations(
+        self, mock_stories, mock_articles, mock_locations, *_
+    ):
         mock_stories.return_value = [_make_story()]
         mock_locations.return_value = {
             "story1": [
@@ -145,7 +155,16 @@ class TestGetStory:
     @patch(f"{QUERIES}.query_story_locations", return_value={})
     @patch(f"{QUERIES}.query_story_articles", return_value=[])
     @patch(f"{QUERIES}.query_story_by_id")
-    async def test_related_stories_populated(self, mock_by_id, mock_articles, mock_locations, mock_persons, mock_topics, mock_related, *_):
+    async def test_related_stories_populated(
+        self,
+        mock_by_id,
+        mock_articles,
+        mock_locations,
+        mock_persons,
+        mock_topics,
+        mock_related,
+        *_,
+    ):
         mock_by_id.return_value = _make_story()
         mock_related.return_value = [
             _make_story(id="related1", title="Related Story"),
@@ -186,13 +205,21 @@ class TestGetStoryFeed:
         assert result == []
 
     @pytest.mark.asyncio
-    @patch(f"{QUERIES}.fetch_og_images", return_value={"https://bbc.co.uk/1": "https://img.com/1.jpg", "https://cnn.com/1": None})
+    @patch(
+        f"{QUERIES}.fetch_og_images",
+        return_value={
+            "https://bbc.co.uk/1": "https://img.com/1.jpg",
+            "https://cnn.com/1": None,
+        },
+    )
     @patch(f"{QUERIES}.query_story_topics", return_value={"story1": ["Politics"]})
     @patch(f"{QUERIES}.query_story_persons", return_value={})
     @patch(f"{QUERIES}.query_story_locations", return_value={})
     @patch(f"{QUERIES}.query_story_articles")
     @patch(f"{QUERIES}.query_stories")
-    async def test_card_counts_articles_and_sources(self, mock_stories, mock_articles, *_):
+    async def test_card_counts_articles_and_sources(
+        self, mock_stories, mock_articles, *_
+    ):
         mock_stories.return_value = [_make_story()]
         mock_articles.return_value = [
             _make_article_row(source="BBC", url="https://bbc.co.uk/1"),

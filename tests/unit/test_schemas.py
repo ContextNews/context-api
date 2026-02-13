@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.schemas.enums import FilterPeriod, FilterRegion, FilterTopic, Interval
+from app.schemas.landing import LandingStory, RegionTopStories
 from app.schemas.news import (
     ArticleLocationSchema,
     NewsStory,
@@ -13,7 +14,6 @@ from app.schemas.news import (
     StoryCard,
     StoryPersonSchema,
 )
-from app.schemas.landing import LandingStory, RegionTopStories
 
 
 class TestFilterEnums:

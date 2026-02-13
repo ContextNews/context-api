@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Script to analyze stories from the API and check for shared articles."""
 
-import httpx
 from collections import defaultdict
+
+import httpx
 
 API_URL = "http://context-dev-api-alb-1959489086.eu-west-2.elb.amazonaws.com/stories/"
 
@@ -41,7 +42,11 @@ def main():
     print("SHARED ARTICLES CHECK")
     print("=" * 80)
 
-    shared_articles = {url: story_list for url, story_list in url_to_stories.items() if len(story_list) > 1}
+    shared_articles = {
+        url: story_list
+        for url, story_list in url_to_stories.items()
+        if len(story_list) > 1
+    }
 
     if shared_articles:
         print(f"\nFound {len(shared_articles)} article(s) shared between stories:\n")

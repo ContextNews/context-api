@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from app.queries.news.stories_queries import (
     query_related_stories,
     query_stories,
-    query_story_by_id,
     query_story_articles,
+    query_story_by_id,
     query_story_locations,
     query_story_persons,
     query_story_topics,
@@ -36,7 +36,15 @@ async def list_stories(
 ) -> list[NewsStory]:
     start, end = get_date_range(period, from_date, to_date)
 
-    stories_db = query_stories(db, start, end, region=region, topic=topic, limit=limit, parent_only=True)
+    stories_db = query_stories(
+        db,
+        start,
+        end,
+        region=region,
+        topic=topic,
+        limit=limit,
+        parent_only=True,
+    )
     if not stories_db:
         return []
 
@@ -135,12 +143,10 @@ async def get_story(db: Session, story_id: str) -> NewsStoryWithRelated | None:
         key_points=story.key_points or [],
         topics=topics_by_story.get(story_id, []),
         locations=[
-            ArticleLocationSchema(**loc)
-            for loc in locations_by_story.get(story_id, [])
+            ArticleLocationSchema(**loc) for loc in locations_by_story.get(story_id, [])
         ],
         persons=[
-            StoryPersonSchema(**person)
-            for person in persons_by_story.get(story_id, [])
+            StoryPersonSchema(**person) for person in persons_by_story.get(story_id, [])
         ],
         story_period=story.story_period,
         generated_at=story.generated_at,
@@ -159,7 +165,15 @@ async def get_story_feed(
 ) -> list[StoryCard]:
     start, end = get_date_range(period, None, None)
 
-    stories_db = query_stories(db, start, end, region=region, topic=topic, limit=limit, parent_only=True)
+    stories_db = query_stories(
+        db,
+        start,
+        end,
+        region=region,
+        topic=topic,
+        limit=limit,
+        parent_only=True,
+    )
     if not stories_db:
         return []
 

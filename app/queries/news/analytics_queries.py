@@ -1,11 +1,16 @@
 from collections import defaultdict
 from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
 
-from app.schemas.news import EntityCount, HistoricalEntityCount, HistoricalEntityCountDataPoint
 from rds_postgres.models import Article, ArticleEntity
+from sqlalchemy import desc, func
+from sqlalchemy.orm import Session
+
 from app.schemas.enums import FilterRegion, Interval
+from app.schemas.news import (
+    EntityCount,
+    HistoricalEntityCount,
+    HistoricalEntityCountDataPoint,
+)
 
 
 def query_top_entities(
@@ -35,8 +40,7 @@ def query_top_entities(
     results = rows.all()
 
     entities = [
-        EntityCount(type=entity_type, name=row.name, count=row.count)
-        for row in results
+        EntityCount(type=entity_type, name=row.name, count=row.count) for row in results
     ]
 
     return entities
@@ -51,7 +55,9 @@ def query_top_entities_with_history(
     limit: int | None,
     interval: Interval,
 ) -> list[HistoricalEntityCount]:
-    top_entities = query_top_entities(db, entity_type, region, from_date, to_date, limit)
+    top_entities = query_top_entities(
+        db, entity_type, region, from_date, to_date, limit
+    )
 
     entity_names = [e.name for e in top_entities]
 
@@ -59,9 +65,9 @@ def query_top_entities_with_history(
         return []
 
     if interval == Interval.hourly:
-        time_bucket = func.date_trunc('hour', Article.published_at)
+        time_bucket = func.date_trunc("hour", Article.published_at)
     else:
-        time_bucket = func.date_trunc('day', Article.published_at)
+        time_bucket = func.date_trunc("day", Article.published_at)
 
     history_rows = (
         db.query(
@@ -86,11 +92,13 @@ def query_top_entities_with_history(
 
     results = []
     for entity in top_entities:
-        results.append(HistoricalEntityCount(
-            type=entity.type,
-            name=entity.name,
-            count=entity.count,
-            history=history_by_entity.get(entity.name, [])
-        ))
+        results.append(
+            HistoricalEntityCount(
+                type=entity.type,
+                name=entity.name,
+                count=entity.count,
+                history=history_by_entity.get(entity.name, []),
+            )
+        )
 
     return results

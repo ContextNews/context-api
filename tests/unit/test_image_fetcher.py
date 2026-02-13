@@ -33,7 +33,10 @@ class TestFetchOgImage:
 
     @pytest.mark.asyncio
     async def test_extracts_og_image_content_first_order(self):
-        html = '<html><head><meta content="https://img.com/alt.jpg" property="og:image"></head></html>'
+        html = (
+            '<html><head><meta content="https://img.com/alt.jpg"'
+            ' property="og:image"></head></html>'
+        )
         client = AsyncMock(spec=httpx.AsyncClient)
         response = MagicMock()
         response.text = html

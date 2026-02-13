@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
+
 
 class EntityCount(BaseModel):
     type: str
@@ -27,6 +29,7 @@ class NewsSource(BaseModel):
     owner: str
     state_media: bool
     based: str
+
 
 class ArticleLocationSchema(BaseModel):
     wikidata_qid: str
@@ -57,12 +60,14 @@ class StoryCard(BaseModel):
     updated_at: str
     image_url: str | None = None
 
+
 class NewsStoryArticle(BaseModel):
     article_id: str
     headline: str
     source: str
     url: str
     image_url: str | None = None
+
 
 class NewsStory(BaseModel):
     story_id: str

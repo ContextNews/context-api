@@ -12,9 +12,12 @@ FastAPI REST API for accessing Context News data from a PostgreSQL/PostGIS datab
 poetry install                                # Install dependencies
 poetry run uvicorn app.main:app --reload      # Run dev server (port 8000)
 docker build -t context-api .                 # Build Docker image
+poetry run ruff check .                       # Lint
+poetry run ruff format .                      # Format
+poetry run mypy app                           # Type check
+poetry run pytest tests/unit -v               # Run unit tests
+poetry run pre-commit install                 # Install pre-commit hooks (once)
 ```
-
-No test suite or linter is configured.
 
 ## Architecture
 
@@ -46,6 +49,8 @@ All routes are mounted under `root_path="/api"`. Two top-level groups:
 
 Common query params across news endpoints: `period`, `region`, `topic`, `from_date`, `to_date`, `limit`. Analytics endpoints also support `interval` (hourly/daily).
 
-## Deployment
+## CI/CD
 
-GitHub Actions (`.github/workflows/ecs-deploy.yml`) builds a Docker image and deploys to AWS ECS in `eu-west-2` on push to `main`.
+- **Pre-commit hooks:** Ruff check (with auto-fix) and Ruff format run on every commit via `.pre-commit-config.yaml`.
+- **GitHub Actions CI** (`.github/workflows/ci.yml`): Runs ruff check, ruff format, mypy, and pytest on every push and PR. Merging to `main` is blocked unless CI passes.
+- **ECS Deploy** (`.github/workflows/ecs-deploy.yml`): Builds a Docker image and deploys to AWS ECS in `eu-west-2` on push to `main`.

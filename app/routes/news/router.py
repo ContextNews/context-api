@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from . import stories, articles, analytics, sources
+
+from . import analytics, articles, sources, stories
 
 router = APIRouter(prefix="/news", tags=["news"])
 router.include_router(stories.router)

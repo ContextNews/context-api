@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.router import router
 
-
 app = FastAPI(
     title="Context API",
     root_path="/api",
@@ -21,8 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/health")
-def health():
+def health() -> dict[str, str]:
     return {"status": "ok"}
 
 

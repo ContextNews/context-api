@@ -1,8 +1,6 @@
-from typing import List
 from app.schemas.news import NewsSource
 
-
-SOURCES: List[NewsSource] = [
+SOURCES: list[NewsSource] = [
     # BBC
     NewsSource(
         source="BBC",
@@ -265,5 +263,6 @@ SOURCES: List[NewsSource] = [
     ),
 ]
 
-def get_news_sources() -> List[NewsSource]:
+
+def get_news_sources() -> list[NewsSource]:
     return SOURCES

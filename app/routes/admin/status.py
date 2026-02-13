@@ -9,10 +9,10 @@ def status_check() -> dict[str, str]:
 
 
 @router.get("/badge")
-def status_badge():
+def status_badge() -> dict[str, str | int]:
     return {
         "schemaVersion": 1,
         "label": "api",
         "message": "online",
-        "color": "brightgreen"
+        "color": "brightgreen",
     }

@@ -2,9 +2,13 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.queries.news.articles_queries import query_articles, query_article_by_id, query_article_locations
+from app.queries.news.articles_queries import (
+    query_article_by_id,
+    query_article_locations,
+    query_articles,
+)
 from app.schemas.enums import FilterPeriod, FilterRegion
-from app.schemas.news import NewsArticle, ArticleLocationSchema
+from app.schemas.news import ArticleLocationSchema, NewsArticle
 from app.services.utils.date_utils import get_date_range
 
 

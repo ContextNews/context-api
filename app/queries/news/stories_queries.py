@@ -1,9 +1,6 @@
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import func, literal_column, or_, text
-from sqlalchemy.orm import Session
-
-from app.schemas.enums import FilterRegion, FilterTopic
 from rds_postgres.models import (
     Article,
     ArticleStory,
@@ -12,51 +9,257 @@ from rds_postgres.models import (
     Story,
     StoryLocation,
     StoryPerson,
-    StoryStory,
     StoryTopic,
 )
+from sqlalchemy import func, literal_column, text
+from sqlalchemy.orm import Session
+
+from app.schemas.enums import FilterRegion, FilterTopic
 
 # Mapping of ISO 3166-1 alpha-3 country codes to regions
 REGION_COUNTRY_CODES: dict[FilterRegion, set[str]] = {
     FilterRegion.north_america: {
-        "USA", "CAN", "MEX", "GTM", "BLZ", "HND", "SLV", "NIC", "CRI", "PAN",
-        "CUB", "JAM", "HTI", "DOM", "PRI", "TTO", "BHS", "BRB", "ATG", "DMA",
-        "GRD", "KNA", "LCA", "VCT", "ABW", "CUW", "SXM", "BES", "AIA", "VGB",
-        "VIR", "CYM", "TCA", "BMU", "GRL", "SPM", "MTQ", "GLP", "MAF", "BLM",
+        "USA",
+        "CAN",
+        "MEX",
+        "GTM",
+        "BLZ",
+        "HND",
+        "SLV",
+        "NIC",
+        "CRI",
+        "PAN",
+        "CUB",
+        "JAM",
+        "HTI",
+        "DOM",
+        "PRI",
+        "TTO",
+        "BHS",
+        "BRB",
+        "ATG",
+        "DMA",
+        "GRD",
+        "KNA",
+        "LCA",
+        "VCT",
+        "ABW",
+        "CUW",
+        "SXM",
+        "BES",
+        "AIA",
+        "VGB",
+        "VIR",
+        "CYM",
+        "TCA",
+        "BMU",
+        "GRL",
+        "SPM",
+        "MTQ",
+        "GLP",
+        "MAF",
+        "BLM",
     },
     FilterRegion.south_america: {
-        "BRA", "ARG", "COL", "PER", "VEN", "CHL", "ECU", "BOL", "PRY", "URY",
-        "GUY", "SUR", "GUF", "FLK",
+        "BRA",
+        "ARG",
+        "COL",
+        "PER",
+        "VEN",
+        "CHL",
+        "ECU",
+        "BOL",
+        "PRY",
+        "URY",
+        "GUY",
+        "SUR",
+        "GUF",
+        "FLK",
     },
     FilterRegion.europe: {
-        "GBR", "DEU", "FRA", "ITA", "ESP", "PRT", "NLD", "BEL", "AUT", "CHE",
-        "SWE", "NOR", "DNK", "FIN", "IRL", "POL", "CZE", "HUN", "ROU", "BGR",
-        "GRC", "HRV", "SVK", "SVN", "EST", "LVA", "LTU", "CYP", "MLT", "LUX",
-        "ISL", "AND", "MCO", "SMR", "VAT", "LIE", "ALB", "BIH", "MNE", "MKD",
-        "SRB", "XKX", "UKR", "BLR", "MDA", "RUS", "GEO", "ARM", "AZE",
+        "GBR",
+        "DEU",
+        "FRA",
+        "ITA",
+        "ESP",
+        "PRT",
+        "NLD",
+        "BEL",
+        "AUT",
+        "CHE",
+        "SWE",
+        "NOR",
+        "DNK",
+        "FIN",
+        "IRL",
+        "POL",
+        "CZE",
+        "HUN",
+        "ROU",
+        "BGR",
+        "GRC",
+        "HRV",
+        "SVK",
+        "SVN",
+        "EST",
+        "LVA",
+        "LTU",
+        "CYP",
+        "MLT",
+        "LUX",
+        "ISL",
+        "AND",
+        "MCO",
+        "SMR",
+        "VAT",
+        "LIE",
+        "ALB",
+        "BIH",
+        "MNE",
+        "MKD",
+        "SRB",
+        "XKX",
+        "UKR",
+        "BLR",
+        "MDA",
+        "RUS",
+        "GEO",
+        "ARM",
+        "AZE",
     },
     FilterRegion.africa: {
-        "ZAF", "NGA", "EGY", "KEN", "ETH", "GHA", "TZA", "UGA", "DZA", "MAR",
-        "TUN", "LBY", "SDN", "SSD", "AGO", "MOZ", "ZWE", "ZMB", "BWA", "NAM",
-        "SEN", "CIV", "CMR", "COD", "COG", "GAB", "GNQ", "CAF", "TCD", "NER",
-        "MLI", "BFA", "BEN", "TGO", "GIN", "SLE", "LBR", "GMB", "GNB", "CPV",
-        "MRT", "ERI", "DJI", "SOM", "RWA", "BDI", "MWI", "LSO", "SWZ", "MDG",
-        "MUS", "SYC", "COM", "REU", "MYT", "STP",
+        "ZAF",
+        "NGA",
+        "EGY",
+        "KEN",
+        "ETH",
+        "GHA",
+        "TZA",
+        "UGA",
+        "DZA",
+        "MAR",
+        "TUN",
+        "LBY",
+        "SDN",
+        "SSD",
+        "AGO",
+        "MOZ",
+        "ZWE",
+        "ZMB",
+        "BWA",
+        "NAM",
+        "SEN",
+        "CIV",
+        "CMR",
+        "COD",
+        "COG",
+        "GAB",
+        "GNQ",
+        "CAF",
+        "TCD",
+        "NER",
+        "MLI",
+        "BFA",
+        "BEN",
+        "TGO",
+        "GIN",
+        "SLE",
+        "LBR",
+        "GMB",
+        "GNB",
+        "CPV",
+        "MRT",
+        "ERI",
+        "DJI",
+        "SOM",
+        "RWA",
+        "BDI",
+        "MWI",
+        "LSO",
+        "SWZ",
+        "MDG",
+        "MUS",
+        "SYC",
+        "COM",
+        "REU",
+        "MYT",
+        "STP",
     },
     FilterRegion.middle_east: {
-        "SAU", "ARE", "QAT", "KWT", "BHR", "OMN", "YEM", "IRQ", "IRN", "SYR",
-        "JOR", "LBN", "ISR", "PSE", "TUR",
+        "SAU",
+        "ARE",
+        "QAT",
+        "KWT",
+        "BHR",
+        "OMN",
+        "YEM",
+        "IRQ",
+        "IRN",
+        "SYR",
+        "JOR",
+        "LBN",
+        "ISR",
+        "PSE",
+        "TUR",
     },
     FilterRegion.asia: {
-        "CHN", "JPN", "KOR", "PRK", "IND", "PAK", "BGD", "LKA", "NPL", "BTN",
-        "MMR", "THA", "VNM", "LAO", "KHM", "MYS", "SGP", "IDN", "PHL", "BRN",
-        "TLS", "MNG", "KAZ", "UZB", "TKM", "KGZ", "TJK", "AFG", "MDV", "HKG",
-        "MAC", "TWN",
+        "CHN",
+        "JPN",
+        "KOR",
+        "PRK",
+        "IND",
+        "PAK",
+        "BGD",
+        "LKA",
+        "NPL",
+        "BTN",
+        "MMR",
+        "THA",
+        "VNM",
+        "LAO",
+        "KHM",
+        "MYS",
+        "SGP",
+        "IDN",
+        "PHL",
+        "BRN",
+        "TLS",
+        "MNG",
+        "KAZ",
+        "UZB",
+        "TKM",
+        "KGZ",
+        "TJK",
+        "AFG",
+        "MDV",
+        "HKG",
+        "MAC",
+        "TWN",
     },
     FilterRegion.oceania: {
-        "AUS", "NZL", "PNG", "FJI", "SLB", "VUT", "NCL", "PYF", "WSM", "TON",
-        "FSM", "MHL", "PLW", "KIR", "NRU", "TUV", "COK", "NIU", "TKL", "ASM",
-        "GUM", "MNP", "WLF",
+        "AUS",
+        "NZL",
+        "PNG",
+        "FJI",
+        "SLB",
+        "VUT",
+        "NCL",
+        "PYF",
+        "WSM",
+        "TON",
+        "FSM",
+        "MHL",
+        "PLW",
+        "KIR",
+        "NRU",
+        "TUV",
+        "COK",
+        "NIU",
+        "TKL",
+        "ASM",
+        "GUM",
+        "MNP",
+        "WLF",
     },
 }
 
@@ -99,7 +302,7 @@ def query_stories(
     if limit:
         query = query.limit(limit)
 
-    return query.all()
+    return query.all()  # type: ignore[no-any-return]
 
 
 def query_story_by_id(db: Session, story_id: str) -> Story | None:
@@ -124,7 +327,10 @@ def query_related_stories(db: Session, story_id: str) -> list[Story]:
                     END,
                     related.depth + 1
                     FROM story_stories ss
-                    JOIN related ON (ss.story_id_1 = related.id OR ss.story_id_2 = related.id)
+                    JOIN related ON (
+                        ss.story_id_1 = related.id
+                        OR ss.story_id_2 = related.id
+                    )
                         AND related.depth < 10
                 )
                 SELECT id FROM related WHERE id != :story_id
@@ -136,7 +342,7 @@ def query_related_stories(db: Session, story_id: str) -> list[Story]:
     if not related_ids:
         return []
 
-    return (
+    return (  # type: ignore[no-any-return]
         db.query(Story)
         .filter(Story.id.in_(related_ids))
         .order_by(Story.story_period.desc())
@@ -147,11 +353,7 @@ def query_related_stories(db: Session, story_id: str) -> list[Story]:
 def query_sub_stories(db: Session, parent_story_ids: list[str]) -> list[Story]:
     if not parent_story_ids:
         return []
-    return (
-        db.query(Story)
-        .filter(Story.parent_story_id.in_(parent_story_ids))
-        .all()
-    )
+    return db.query(Story).filter(Story.parent_story_id.in_(parent_story_ids)).all()  # type: ignore[no-any-return]
 
 
 def query_story_articles(
@@ -160,7 +362,7 @@ def query_story_articles(
 ) -> list[tuple[str, str, str, str, str]]:
     if not story_ids:
         return []
-    return (
+    return (  # type: ignore[no-any-return]
         db.query(
             ArticleStory.story_id,
             Article.id,
@@ -174,7 +376,7 @@ def query_story_articles(
     )
 
 
-def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list]:
+def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list[Any]]:
     """
     Query locations for a list of stories.
     Returns a dict mapping story_id -> list of location data.
@@ -189,24 +391,30 @@ def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list]:
             Location.name,
             Location.location_type,
             Location.country_code,
-            func.ST_Y(literal_column("locations.coordinates::geometry")).label("latitude"),
-            func.ST_X(literal_column("locations.coordinates::geometry")).label("longitude"),
+            func.ST_Y(literal_column("locations.coordinates::geometry")).label(
+                "latitude"
+            ),
+            func.ST_X(literal_column("locations.coordinates::geometry")).label(
+                "longitude"
+            ),
         )
         .join(Location, Location.wikidata_qid == StoryLocation.wikidata_qid)
         .filter(StoryLocation.story_id.in_(story_ids))
         .all()
     )
 
-    locations_by_story: dict[str, list] = {}
+    locations_by_story: dict[str, list[Any]] = {}
     for row in rows:
-        locations_by_story.setdefault(row.story_id, []).append({
-            "wikidata_qid": row.wikidata_qid,
-            "name": row.name,
-            "location_type": row.location_type,
-            "country_code": row.country_code,
-            "latitude": row.latitude,
-            "longitude": row.longitude,
-        })
+        locations_by_story.setdefault(row.story_id, []).append(
+            {
+                "wikidata_qid": row.wikidata_qid,
+                "name": row.name,
+                "location_type": row.location_type,
+                "country_code": row.country_code,
+                "latitude": row.latitude,
+                "longitude": row.longitude,
+            }
+        )
 
     return locations_by_story
 
@@ -232,7 +440,7 @@ def query_story_topics(db: Session, story_ids: list[str]) -> dict[str, list[str]
     return topics_by_story
 
 
-def query_story_persons(db: Session, story_ids: list[str]) -> dict[str, list]:
+def query_story_persons(db: Session, story_ids: list[str]) -> dict[str, list[Any]]:
     """
     Query persons for a list of stories.
     Returns a dict mapping story_id -> list of person data.
@@ -254,7 +462,7 @@ def query_story_persons(db: Session, story_ids: list[str]) -> dict[str, list]:
         .all()
     )
 
-    persons_by_story: dict[str, list] = {}
+    persons_by_story: dict[str, list[Any]] = {}
     for row in rows:
         persons_by_story.setdefault(row.story_id, []).append(
             {

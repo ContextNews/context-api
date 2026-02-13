@@ -46,4 +46,4 @@ async def fetch_og_images(urls: list[str]) -> dict[str, str | None]:
     async with httpx.AsyncClient() as client:
         tasks = [fetch_og_image(url, client) for url in urls]
         results = await asyncio.gather(*tasks)
-    return dict(zip(urls, results))
+    return dict(zip(urls, results, strict=False))

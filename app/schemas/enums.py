@@ -1,12 +1,13 @@
-from enum import Enum
+from enum import StrEnum
 
-class FilterPeriod(str, Enum):
+
+class FilterPeriod(StrEnum):
     today = "today"
     week = "week"
     month = "month"
 
 
-class FilterRegion(str, Enum):
+class FilterRegion(StrEnum):
     north_america = "north_america"
     south_america = "south_america"
     europe = "europe"
@@ -16,7 +17,7 @@ class FilterRegion(str, Enum):
     oceania = "oceania"
 
 
-class FilterTopic(str, Enum):
+class FilterTopic(StrEnum):
     politics = "Politics"
     conflict_and_security = "Conflict & Security"
     crime = "Crime"
@@ -30,6 +31,6 @@ class FilterTopic(str, Enum):
     entertainment = "Entertainment"
 
 
-class Interval(str, Enum):
+class Interval(StrEnum):
     hourly = "hourly"
     daily = "daily"

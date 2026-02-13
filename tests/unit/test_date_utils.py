@@ -1,7 +1,5 @@
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 from unittest.mock import patch
-
-import pytest
 
 from app.schemas.enums import FilterPeriod
 from app.services.utils.date_utils import get_date_range

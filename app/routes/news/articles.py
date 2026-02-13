@@ -7,8 +7,10 @@ from app.db import get_db
 from app.schemas.enums import FilterPeriod, FilterRegion
 from app.schemas.news import NewsArticle
 from app.services.news.articles_service import (
-    list_articles as list_articles_service,
     get_article as get_article_service,
+)
+from app.services.news.articles_service import (
+    list_articles as list_articles_service,
 )
 
 router = APIRouter(prefix="/articles")

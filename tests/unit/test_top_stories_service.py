@@ -58,7 +58,9 @@ class TestGetTopStoriesByRegion:
     @patch(f"{QUERIES}.query_stories")
     async def test_batch_fetches_locations(self, mock_stories, mock_locations):
         story = _make_story()
-        mock_stories.side_effect = lambda *a, region=None, **kw: [story] if region == FilterRegion.asia else []
+        mock_stories.side_effect = lambda *a, region=None, **kw: (
+            [story] if region == FilterRegion.asia else []
+        )
         mock_locations.return_value = {
             "story1": [
                 {

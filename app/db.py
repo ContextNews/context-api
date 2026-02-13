@@ -5,6 +5,6 @@ load_dotenv()
 from rds_postgres.connection import get_session
 
 
-def get_db():
+def get_db():  # type: ignore[no-untyped-def]
     with get_session() as session:
         yield session

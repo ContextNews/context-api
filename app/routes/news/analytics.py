@@ -1,17 +1,19 @@
 from datetime import date
-from fastapi import APIRouter, Query, Depends
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.schemas.news import EntityCount, HistoricalEntityCount
 from app.schemas.enums import FilterPeriod, FilterRegion, Interval
+from app.schemas.news import EntityCount, HistoricalEntityCount
 from app.services.news.analytics_service import (
     get_top_locations,
-    get_top_people,
     get_top_organizations,
+    get_top_people,
 )
 
 router = APIRouter(prefix="/analytics")
+
 
 @router.get("/top-locations")
 def top_locations(
@@ -33,6 +35,7 @@ def top_locations(
         interval=interval,
     )
 
+
 @router.get("/top-people")
 def top_people(
     db: Session = Depends(get_db),
@@ -52,6 +55,7 @@ def top_people(
         limit=limit,
         interval=interval,
     )
+
 
 @router.get("/top-organizations")
 def top_organizations(

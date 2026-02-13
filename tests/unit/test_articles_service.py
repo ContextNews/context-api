@@ -2,8 +2,6 @@ from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from app.schemas.enums import FilterPeriod
 from app.services.news.articles_service import get_article, list_articles
 
