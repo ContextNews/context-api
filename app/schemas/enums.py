@@ -3,6 +3,7 @@ from enum import StrEnum
 
 class FilterPeriod(StrEnum):
     today = "today"
+    last_24_hours = "last_24_hours"
     week = "week"
     month = "month"
 

@@ -52,7 +52,7 @@ Most `/news` endpoints support these filtering parameters:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `period` | enum | `today` | Time period filter: `today`, `week`, `month` |
+| `period` | enum | `today` | Time period filter: `today`, `last_24_hours`, `week`, `month` |
 | `region` | enum | none | Region filter: `north_america`, `south_america`, `europe`, `africa`, `middle_east`, `asia`, `oceania` |
 | `from_date` | date | none | Custom start date (YYYY-MM-DD) |
 | `to_date` | date | none | Custom end date (YYYY-MM-DD) |
@@ -73,7 +73,11 @@ Most `/news` endpoints support these filtering parameters:
 |--------|----------|-------------|
 | GET | `/landing/top-stories` | Top 3 stories per region |
 
-The `top-stories` endpoint supports the `period` query parameter (default: `today`).
+The `top-stories` endpoint supports the `period` query parameter (default: `week`).
+
+Period semantics:
+- `today`: current calendar day (`00:00` to next `00:00`)
+- `last_24_hours`: rolling 24-hour window ending now
 
 ### News - Stories
 

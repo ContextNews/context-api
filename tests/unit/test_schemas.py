@@ -19,6 +19,7 @@ from app.schemas.news import (
 class TestFilterEnums:
     def test_filter_period_values(self):
         assert FilterPeriod.today.value == "today"
+        assert FilterPeriod.last_24_hours.value == "last_24_hours"
         assert FilterPeriod.week.value == "week"
         assert FilterPeriod.month.value == "month"
 

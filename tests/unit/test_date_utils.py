@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from unittest.mock import patch
 
 from app.schemas.enums import FilterPeriod
@@ -34,6 +34,15 @@ class TestGetDateRangeExplicitDates:
         assert start == datetime(2025, 1, 1, 0, 0, 0)
         assert end == datetime(2025, 1, 3, 0, 0, 0)
 
+    def test_explicit_dates_override_last_24_hours_period(self):
+        start, end = get_date_range(
+            FilterPeriod.last_24_hours,
+            from_date=date(2025, 5, 10),
+            to_date=date(2025, 5, 12),
+        )
+        assert start == datetime(2025, 5, 10, 0, 0, 0)
+        assert end == datetime(2025, 5, 13, 0, 0, 0)
+
 
 class TestGetDateRangePeriod:
     @patch("app.services.utils.date_utils.date")
@@ -62,6 +71,16 @@ class TestGetDateRangePeriod:
         start, end = get_date_range(FilterPeriod.month, None, None)
         assert start == datetime(2025, 6, 16, 0, 0, 0)
         assert end == datetime(2025, 7, 16, 0, 0, 0)
+
+    @patch("app.services.utils.date_utils._now")
+    def test_last_24_hours_period(self, mock_now):
+        fixed_now = datetime(2025, 7, 15, 15, 30, 0)
+        mock_now.return_value = fixed_now
+
+        start, end = get_date_range(FilterPeriod.last_24_hours, None, None)
+        assert end == fixed_now
+        assert start == fixed_now - timedelta(hours=24)
+        assert start.time() != time.min
 
 
 class TestGetDateRangePartialDates:
