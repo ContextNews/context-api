@@ -36,6 +36,7 @@ ignore = ["B008"]
 [tool.ruff.lint.per-file-ignores]
 "app/db.py" = ["E402"]
 "scripts/*" = ["E501"]
+"tests/unit/test_stories_routes.py" = ["E402"]
 
 [tool.mypy]
 python_version = "3.12"

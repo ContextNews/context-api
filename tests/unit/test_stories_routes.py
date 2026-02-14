@@ -1,10 +1,15 @@
+import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.db import get_db
-from app.main import app
+# Set dummy DATABASE_URL before importing app — the connection is never used
+# because we override get_db, but rds_postgres.connection reads it at import time.
+os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost:5432/test")
+
+from app.db import get_db  # noqa: E402
+from app.main import app  # noqa: E402
 from app.schemas.news import PaginatedStoryCards
 
 FEED_PATH = "/news/stories/news-feed"
