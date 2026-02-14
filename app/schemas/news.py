@@ -61,6 +61,13 @@ class StoryCard(BaseModel):
     image_url: str | None = None
 
 
+class PaginatedStoryCards(BaseModel):
+    stories: list[StoryCard]
+    offset: int
+    limit: int
+    has_more: bool
+
+
 class NewsStoryArticle(BaseModel):
     article_id: str
     headline: str

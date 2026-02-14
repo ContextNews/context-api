@@ -84,7 +84,7 @@ Period semantics:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/news/stories/` | List stories with full details (including persons) |
-| GET | `/news/stories/news-feed` | Story cards for news feed UI |
+| GET | `/news/stories/news-feed` | Paginated story cards for news feed UI |
 | GET | `/news/stories/{story_id}` | Get a single story by ID |
 
 ### News - Articles
@@ -261,38 +261,50 @@ Returns the same shape as `GET /news/stories/` plus:
 
 ### `GET /news/stories/news-feed`
 
+Supports pagination via `offset` and `limit` query parameters:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `offset` | int | `0` | Number of stories to skip |
+| `limit` | int | `25` | Page size (1-100) |
+
 ```json
-[
-  {
-    "story_id": "47cb5ca6",
-    "title": "Example story title",
-    "topics": ["Politics", "Economy"],
-    "locations": [
-      {
-        "wikidata_qid": "Q39",
-        "name": "Switzerland",
-        "location_type": "country",
-        "country_code": "CHE",
-        "latitude": 46.8182,
-        "longitude": 8.2275
-      }
-    ],
-    "persons": [
-      {
-        "wikidata_qid": "Q76",
-        "name": "Barack Obama",
-        "description": "44th president of the United States",
-        "nationalities": ["United States"],
-        "image_url": "https://upload.wikimedia.org/example.jpg"
-      }
-    ],
-    "article_count": 5,
-    "sources_count": 3,
-    "story_period": "2024-01-01",
-    "updated_at": "2024-01-01T14:00:00Z",
-    "image_url": "https://example.com/image.jpg"
-  }
-]
+{
+  "stories": [
+    {
+      "story_id": "47cb5ca6",
+      "title": "Example story title",
+      "topics": ["Politics", "Economy"],
+      "locations": [
+        {
+          "wikidata_qid": "Q39",
+          "name": "Switzerland",
+          "location_type": "country",
+          "country_code": "CHE",
+          "latitude": 46.8182,
+          "longitude": 8.2275
+        }
+      ],
+      "persons": [
+        {
+          "wikidata_qid": "Q76",
+          "name": "Barack Obama",
+          "description": "44th president of the United States",
+          "nationalities": ["United States"],
+          "image_url": "https://upload.wikimedia.org/example.jpg"
+        }
+      ],
+      "article_count": 5,
+      "sources_count": 3,
+      "story_period": "2024-01-01",
+      "updated_at": "2024-01-01T14:00:00Z",
+      "image_url": "https://example.com/image.jpg"
+    }
+  ],
+  "offset": 0,
+  "limit": 25,
+  "has_more": true
+}
 ```
 
 ### `GET /news/analytics/top-locations` (and other analytics endpoints)

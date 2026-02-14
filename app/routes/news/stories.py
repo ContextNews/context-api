@@ -5,7 +5,11 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.schemas.enums import FilterPeriod, FilterRegion, FilterTopic
-from app.schemas.news import NewsStory, NewsStoryWithRelated, StoryCard
+from app.schemas.news import (
+    NewsStory,
+    NewsStoryWithRelated,
+    PaginatedStoryCards,
+)
 from app.services.news.stories_service import (
     get_story as get_story_service,
 )
@@ -40,20 +44,22 @@ async def list_stories(
     )
 
 
-@router.get("/news-feed", response_model=list[StoryCard])
+@router.get("/news-feed", response_model=PaginatedStoryCards)
 async def get_story_feed(
     db: Session = Depends(get_db),
     period: FilterPeriod = FilterPeriod.today,
     region: FilterRegion | None = None,
     topic: FilterTopic | None = None,
-    limit: int | None = Query(None, ge=1, le=100),
-) -> list[StoryCard]:
+    limit: int = Query(25, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+) -> PaginatedStoryCards:
     return await get_story_feed_service(
         db=db,
         period=period,
         region=region,
         topic=topic,
         limit=limit,
+        offset=offset,
     )
 
 

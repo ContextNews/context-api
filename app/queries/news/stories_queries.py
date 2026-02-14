@@ -271,6 +271,7 @@ def query_stories(
     region: FilterRegion | None = None,
     topic: FilterTopic | None = None,
     limit: int | None = None,
+    offset: int | None = None,
     parent_only: bool = True,
 ) -> list[Story]:
     query = db.query(Story).filter(
@@ -297,7 +298,10 @@ def query_stories(
             .distinct()
         )
 
-    query = query.order_by(Story.story_period.desc())
+    query = query.order_by(Story.story_period.desc(), Story.id.desc())
+
+    if offset:
+        query = query.offset(offset)
 
     if limit:
         query = query.limit(limit)

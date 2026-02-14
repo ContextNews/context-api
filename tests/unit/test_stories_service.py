@@ -194,15 +194,13 @@ class TestGetStory:
 
 class TestGetStoryFeed:
     @pytest.mark.asyncio
-    @patch(f"{QUERIES}.fetch_og_images", return_value={})
-    @patch(f"{QUERIES}.query_story_topics", return_value={})
-    @patch(f"{QUERIES}.query_story_persons", return_value={})
-    @patch(f"{QUERIES}.query_story_locations", return_value={})
-    @patch(f"{QUERIES}.query_story_articles", return_value=[])
     @patch(f"{QUERIES}.query_stories", return_value=[])
     async def test_returns_empty_when_no_stories(self, *_):
         result = await get_story_feed(MagicMock(), FilterPeriod.today)
-        assert result == []
+        assert result.stories == []
+        assert result.has_more is False
+        assert result.offset == 0
+        assert result.limit == 25
 
     @pytest.mark.asyncio
     @patch(
@@ -228,7 +226,53 @@ class TestGetStoryFeed:
 
         result = await get_story_feed(MagicMock(), FilterPeriod.today)
 
-        assert len(result) == 1
-        assert result[0].article_count == 2
-        assert result[0].sources_count == 2
-        assert result[0].image_url == "https://img.com/1.jpg"
+        assert len(result.stories) == 1
+        assert result.stories[0].article_count == 2
+        assert result.stories[0].sources_count == 2
+        assert result.stories[0].image_url == "https://img.com/1.jpg"
+        assert result.has_more is False
+
+    @pytest.mark.asyncio
+    @patch(f"{QUERIES}.fetch_og_images", return_value={})
+    @patch(f"{QUERIES}.query_story_topics", return_value={})
+    @patch(f"{QUERIES}.query_story_persons", return_value={})
+    @patch(f"{QUERIES}.query_story_locations", return_value={})
+    @patch(f"{QUERIES}.query_story_articles", return_value=[])
+    @patch(f"{QUERIES}.query_stories")
+    async def test_pagination_has_more(self, mock_stories, *_):
+        # Return limit+1 stories to trigger has_more=True
+        mock_stories.return_value = [_make_story(id=f"story{i}") for i in range(4)]
+
+        result = await get_story_feed(MagicMock(), FilterPeriod.today, limit=3)
+
+        assert len(result.stories) == 3
+        assert result.has_more is True
+        assert result.limit == 3
+        assert result.offset == 0
+
+    @pytest.mark.asyncio
+    @patch(f"{QUERIES}.fetch_og_images", return_value={})
+    @patch(f"{QUERIES}.query_story_topics", return_value={})
+    @patch(f"{QUERIES}.query_story_persons", return_value={})
+    @patch(f"{QUERIES}.query_story_locations", return_value={})
+    @patch(f"{QUERIES}.query_story_articles", return_value=[])
+    @patch(f"{QUERIES}.query_stories")
+    async def test_pagination_last_page(self, mock_stories, *_):
+        # Return exactly limit stories (no extra) → has_more=False
+        mock_stories.return_value = [_make_story(id=f"story{i}") for i in range(2)]
+
+        result = await get_story_feed(MagicMock(), FilterPeriod.today, limit=3)
+
+        assert len(result.stories) == 2
+        assert result.has_more is False
+
+    @pytest.mark.asyncio
+    @patch(f"{QUERIES}.query_stories", return_value=[])
+    async def test_pagination_offset_beyond_results(self, *_):
+        result = await get_story_feed(
+            MagicMock(), FilterPeriod.today, limit=25, offset=1000
+        )
+
+        assert result.stories == []
+        assert result.has_more is False
+        assert result.offset == 1000

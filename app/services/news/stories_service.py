@@ -17,6 +17,7 @@ from app.schemas.news import (
     NewsStory,
     NewsStoryArticle,
     NewsStoryWithRelated,
+    PaginatedStoryCards,
     RelatedStorySchema,
     StoryCard,
     StoryPersonSchema,
@@ -161,21 +162,30 @@ async def get_story_feed(
     period: FilterPeriod,
     region: FilterRegion | None = None,
     topic: FilterTopic | None = None,
-    limit: int | None = None,
-) -> list[StoryCard]:
+    limit: int = 25,
+    offset: int = 0,
+) -> PaginatedStoryCards:
     start, end = get_date_range(period, None, None)
 
+    # Fetch one extra to determine has_more
     stories_db = query_stories(
         db,
         start,
         end,
         region=region,
         topic=topic,
-        limit=limit,
+        limit=limit + 1,
+        offset=offset,
         parent_only=True,
     )
+
+    has_more = len(stories_db) > limit
+    stories_db = stories_db[:limit]
+
     if not stories_db:
-        return []
+        return PaginatedStoryCards(
+            stories=[], offset=offset, limit=limit, has_more=False
+        )
 
     story_ids = [story.id for story in stories_db]
 
@@ -222,4 +232,9 @@ async def get_story_feed(
             )
         )
 
-    return cards
+    return PaginatedStoryCards(
+        stories=cards,
+        offset=offset,
+        limit=limit,
+        has_more=has_more,
+    )
