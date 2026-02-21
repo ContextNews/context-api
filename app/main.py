@@ -35,13 +35,25 @@ app.add_middleware(
 # Corrects scope["scheme"] so SQLAdmin generates https:// URLs
 @app.middleware("http")
 async def fix_request_scheme(request: Request, call_next):  # type: ignore[no-untyped-def]
-    if request.headers.get("x-forwarded-proto") == "https":
+    proto = request.headers.get("x-forwarded-proto")
+    if proto == "https" or "cloudfront.net" in str(request.base_url):
         request.scope["scheme"] = "https"
     return await call_next(request)
 
 
 # Outermost: reads X-Forwarded-* headers from ALB first
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
+
+# TEMPORARY DIAGNOSTIC - remove after confirming headers
+@app.middleware("http")
+async def inspect_headers(request: Request, call_next):  # type: ignore[no-untyped-def]
+    print(
+        f"DEBUG: Host={request.headers.get('host')}, "
+        f"Proto={request.headers.get('x-forwarded-proto')}",
+        flush=True,
+    )
+    return await call_next(request)
 
 
 @app.get("/health")
