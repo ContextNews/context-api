@@ -91,7 +91,7 @@ def init_admin(app: FastAPI) -> None:
         return
 
     auth = _AdminAuth(secret_key=secret_key, username=username, password=password)
-    admin = Admin(app, engine, authentication_backend=auth, base_url="/admin/db")
+    admin = Admin(app, engine, authentication_backend=auth, base_url="/api/admin/db")
 
     admin.add_view(ArticleAdmin)
     admin.add_view(StoryAdmin)
