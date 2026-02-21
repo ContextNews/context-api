@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from rds_postgres.connection import engine as engine
 from rds_postgres.connection import get_session
 
 

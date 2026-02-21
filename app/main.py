@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.admin.admin import init_admin
 from app.router import router
 
 app = FastAPI(
@@ -27,3 +28,4 @@ def health() -> dict[str, str]:
 
 
 app.include_router(router)
+init_admin(app)

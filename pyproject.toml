@@ -12,6 +12,7 @@ dependencies = [
     "context-data-schema @ git+https://github.com/ContextNews/context-data-schemas.git@main",
     "httpx (>=0.28.1,<0.29.0)",
     "pycountry>=24.6",
+    "sqladmin>=0.16.0",
 ]
 
 [tool.poetry]
@@ -48,6 +49,10 @@ warn_unused_ignores = true
 module = "rds_postgres.*"
 ignore_missing_imports = true
 follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "sqladmin.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
