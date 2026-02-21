@@ -1,0 +1,264 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #cba6f7;
+  }
+  .kpi-label {
+    font-size: 0.85rem;
+    color: #a6adc8;
+    margin-top: 0.25rem;
+  }
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .chart-card {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .chart-card h3 {
+    font-size: 0.9rem;
+    color: #cdd6f4;
+    margin-bottom: 1rem;
+  }
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  table.unresolved {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  table.unresolved th,
+  table.unresolved td {
+    padding: 0.4rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #313244;
+  }
+  table.unresolved th {
+    color: #a6adc8;
+    font-weight: 600;
+  }
+  table.unresolved td {
+    color: #cdd6f4;
+  }
+  .section-heading {
+    color: #cdd6f4;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #313244;
+  }
+</style>
+
+<div class="container-fluid py-3">
+  <h2 class="mb-4" style="color: #cdd6f4;">Data Observability Dashboard</h2>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value">{{ embedding_coverage_pct }}%</div>
+      <div class="kpi-label">Embedding Coverage</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">{{ gpe_resolution_pct }}%</div>
+      <div class="kpi-label">GPE Resolution</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">{{ person_resolution_pct }}%</div>
+      <div class="kpi-label">Person Resolution</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">{{ unclustered_pct }}%</div>
+      <div class="kpi-label">Unclustered Articles</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">{{ stories_no_location }}</div>
+      <div class="kpi-label">Stories Without Location</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">{{ avg_locations_per_story }}</div>
+      <div class="kpi-label">Avg Locations / Story</div>
+    </div>
+  </div>
+
+  <!-- Ingestion Health -->
+  <div class="section-heading">Ingestion Health</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Articles per Day (last 30d)</h3>
+      <canvas id="articlesPerDay"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Articles per Source</h3>
+      <canvas id="articlesPerSource"></canvas>
+    </div>
+  </div>
+
+  <!-- Topic Distribution -->
+  <div class="section-heading">Topic Distribution</div>
+  <div class="chart-grid">
+    <div class="chart-card full-width">
+      <h3>Top 25 Topics</h3>
+      <canvas id="topicDistribution"></canvas>
+    </div>
+  </div>
+
+  <!-- Entity Resolution -->
+  <div class="section-heading">Entity Resolution</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Top Unresolved GPE Entities</h3>
+      <table class="unresolved">
+        <thead>
+          <tr><th>Entity</th><th>Occurrences</th></tr>
+        </thead>
+        <tbody>
+          {% for row in unresolved_gpe %}
+          <tr><td>{{ row.name }}</td><td>{{ row.count }}</td></tr>
+          {% else %}
+          <tr><td colspan="2" style="color:#a6adc8;">No unresolved GPE entities</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="chart-card">
+      <h3>Top Unresolved Person Entities</h3>
+      <table class="unresolved">
+        <thead>
+          <tr><th>Entity</th><th>Occurrences</th></tr>
+        </thead>
+        <tbody>
+          {% for row in unresolved_person %}
+          <tr><td>{{ row.name }}</td><td>{{ row.count }}</td></tr>
+          {% else %}
+          <tr><td colspan="2" style="color:#a6adc8;">No unresolved person entities</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Clustering Health -->
+  <div class="section-heading">Clustering Health</div>
+  <div class="chart-grid">
+    <div class="chart-card full-width">
+      <h3>Cluster Size Distribution (articles per story)</h3>
+      <canvas id="clusterSizes"></canvas>
+    </div>
+  </div>
+
+  <!-- Embedding Health -->
+  <div class="section-heading">Embedding Health</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Embeddings by Model</h3>
+      <canvas id="embeddingModels"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+  const SCALE_DEFAULTS = {
+    x: { ticks: { color: "#a6adc8" }, grid: { color: "#313244" } },
+    y: { ticks: { color: "#a6adc8" }, grid: { color: "#313244" } },
+  };
+  const LEGEND_DEFAULTS = { labels: { color: "#cdd6f4" } };
+
+  function lineChart(id, labels, values, label) {
+    new Chart(document.getElementById(id), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data: values,
+          borderColor: "#89b4fa",
+          backgroundColor: "rgba(137,180,250,0.1)",
+          tension: 0.3,
+          fill: true,
+          pointRadius: 3,
+        }],
+      },
+      options: {
+        plugins: { legend: LEGEND_DEFAULTS },
+        scales: SCALE_DEFAULTS,
+      },
+    });
+  }
+
+  function barChart(id, labels, values, label, color) {
+    color = color || "#cba6f7";
+    new Chart(document.getElementById(id), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{ label, data: values, backgroundColor: color }],
+      },
+      options: {
+        plugins: { legend: LEGEND_DEFAULTS },
+        scales: SCALE_DEFAULTS,
+      },
+    });
+  }
+
+  lineChart(
+    "articlesPerDay",
+    {{ articles_per_day_labels | tojson }},
+    {{ articles_per_day_values | tojson }},
+    "Articles"
+  );
+
+  barChart(
+    "articlesPerSource",
+    {{ articles_per_source_labels | tojson }},
+    {{ articles_per_source_values | tojson }},
+    "Articles",
+    "#89b4fa"
+  );
+
+  barChart(
+    "topicDistribution",
+    {{ topic_labels | tojson }},
+    {{ topic_values | tojson }},
+    "Articles"
+  );
+
+  barChart(
+    "clusterSizes",
+    {{ cluster_size_bucket_labels | tojson }},
+    {{ cluster_size_bucket_values | tojson }},
+    "Stories",
+    "#a6e3a1"
+  );
+
+  barChart(
+    "embeddingModels",
+    {{ embedding_model_labels | tojson }},
+    {{ embedding_model_values | tojson }},
+    "Embeddings",
+    "#fab387"
+  );
+</script>
+{% endblock %}

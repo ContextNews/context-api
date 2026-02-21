@@ -28,6 +28,7 @@ from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
+from app.admin.dashboard import DashboardView
 from app.db import engine
 
 
@@ -200,7 +201,13 @@ def init_admin(app: FastAPI) -> None:
         return
 
     auth = _AdminAuth(secret_key=secret_key, username=username, password=password)
-    admin = Admin(app, engine, authentication_backend=auth, base_url="/admin/db")
+    admin = Admin(
+        app,
+        engine,
+        authentication_backend=auth,
+        base_url="/admin/db",
+        templates_dir="app/templates",
+    )
 
     admin.add_view(ArticleAdmin)
     admin.add_view(ArticleEmbeddingAdmin)
@@ -222,3 +229,4 @@ def init_admin(app: FastAPI) -> None:
     admin.add_view(LocationAliasAdmin)
     admin.add_view(PersonAdmin)
     admin.add_view(PersonAliasAdmin)
+    admin.add_base_view(DashboardView)
