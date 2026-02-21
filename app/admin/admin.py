@@ -88,7 +88,15 @@ def init_admin(app: FastAPI) -> None:
     secret_key = os.environ.get("ADMIN_SECRET_KEY")
 
     if not username or not password or not secret_key:
+        print(
+            f"ADMIN NOT MOUNTED - missing vars: "
+            f"username={bool(username)} "
+            f"password={bool(password)} "
+            f"secret_key={bool(secret_key)}"
+        )
         return
+
+    print("ADMIN MOUNTING at /api/admin/db")
 
     auth = _AdminAuth(secret_key=secret_key, username=username, password=password)
     admin = Admin(app, engine, authentication_backend=auth, base_url="/api/admin/db")
