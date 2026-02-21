@@ -14,11 +14,7 @@ app = FastAPI(
     root_path_in_servers=False,
     redirect_slashes=False,
 )
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.environ.get("ADMIN_SECRET_KEY", ""),
-)
+# Innermost: CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -29,14 +25,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Session store required for SQLAdmin authentication
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.environ.get("ADMIN_SECRET_KEY", ""),
+)
 
 
+# Corrects scope["scheme"] so SQLAdmin generates https:// URLs
 @app.middleware("http")
-async def clarify_forwarded_proto(request: Request, call_next):  # type: ignore[no-untyped-def]
-    proto = request.headers.get("x-forwarded-proto", "http")
-    if proto == "https":
+async def fix_request_scheme(request: Request, call_next):  # type: ignore[no-untyped-def]
+    if request.headers.get("x-forwarded-proto") == "https":
         request.scope["scheme"] = "https"
     return await call_next(request)
+
+
+# Outermost: reads X-Forwarded-* headers from ALB first
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 
 @app.get("/health")
