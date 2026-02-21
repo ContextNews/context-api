@@ -96,12 +96,15 @@ def init_admin(app: FastAPI) -> None:
         )
         return
 
-    print("ADMIN MOUNTING at /admin/db")
+    print("ADMIN MOUNTING at /api/admin/db")
 
     auth = _AdminAuth(secret_key=secret_key, username=username, password=password)
-    admin = Admin(app, engine, authentication_backend=auth, base_url="/admin/db")
+    admin = Admin(app, engine, authentication_backend=auth, base_url="/api/admin/db")
 
     admin.add_view(ArticleAdmin)
     admin.add_view(StoryAdmin)
     admin.add_view(EntityAdmin)
     admin.add_view(ArticleEntityAdmin)
+
+    for route in app.routes:
+        print("ROUTE:", getattr(route, "path", route))
