@@ -28,7 +28,7 @@ def health() -> dict[str, str]:
 
 
 @app.get("/debug-path")
-async def debug_path(request: Request) -> dict:
+async def debug_path(request: Request) -> dict[str, str]:
     return {
         "path": request.scope["path"],
         "root_path": request.scope["root_path"],
