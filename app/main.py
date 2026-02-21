@@ -31,6 +31,14 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def clarify_forwarded_proto(request: Request, call_next):  # type: ignore[no-untyped-def]
+    proto = request.headers.get("x-forwarded-proto", "http")
+    if proto == "https":
+        request.scope["scheme"] = "https"
+    return await call_next(request)
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
