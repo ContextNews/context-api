@@ -54,3 +54,17 @@ Common query params across news endpoints: `period`, `region`, `topic`, `from_da
 - **Pre-commit hooks:** Ruff check (with auto-fix) and Ruff format run on every commit via `.pre-commit-config.yaml`.
 - **GitHub Actions CI** (`.github/workflows/ci.yml`): Runs ruff check, ruff format, mypy, and pytest on every push and PR. Merging to `main` is blocked unless CI passes.
 - **ECS Deploy** (`.github/workflows/ecs-deploy.yml`): Builds a Docker image and deploys to AWS ECS in `eu-west-2` on push to `main`.
+
+## SQLAdmin Routing — Confirmed Findings
+
+`/api/admin/db` is the SQLAdmin interface in production. SQLAdmin is mounted at `base_url="/admin/db"` (without `/api/`).
+
+**How root_path works:** `FastAPI(root_path="/api")` causes Starlette to strip `/api` from incoming paths before route matching, but does NOT modify `scope["path"]` — so `scope["path"]` still reports the full raw path including `/api/`. This is confirmed by the route dump: all routes appear without `/api/` prefix (`/admin/status`, `/news/stories`, etc.) yet they work in production at `/api/admin/status`, `/api/news/stories` etc.
+
+**Consequence:** SQLAdmin must be at `base_url="/admin/db"`. Using `base_url="/api/admin/db"` would cause it to expect paths of `/api/api/admin/db` → 404.
+
+**Do not change `base_url` to `/api/admin/db`.** This was tried and confirmed broken. The `scope["path"] = "/api/debug-path"` debug result was initially misread as evidence for keeping `/api/` in the mount path — it actually shows the raw unstripped path that `scope["path"]` always reports, while Starlette strips `root_path` internally for matching only.
+
+**If SQLAdmin 404s after deploy, check:**
+- ECS logs for `ADMIN NOT MOUNTED` — means `ADMIN_USERNAME`, `ADMIN_PASSWORD`, or `ADMIN_SECRET_KEY` are missing from the ECS task definition.
+- CloudFront custom error responses intercepting non-200 origin responses and serving the SPA instead.
