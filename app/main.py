@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin.admin import init_admin
@@ -25,6 +25,14 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/debug-path")
+async def debug_path(request: Request) -> dict:
+    return {
+        "path": request.scope["path"],
+        "root_path": request.scope["root_path"],
+    }
 
 
 app.include_router(router)
