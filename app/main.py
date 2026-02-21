@@ -1,5 +1,9 @@
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.admin.admin import init_admin
 from app.router import router
@@ -9,6 +13,11 @@ app = FastAPI(
     root_path="/api",
     root_path_in_servers=False,
     redirect_slashes=False,
+)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.environ.get("ADMIN_SECRET_KEY", ""),
 )
 app.add_middleware(
     CORSMiddleware,
