@@ -82,6 +82,7 @@ class ArticleEntityAdmin(ModelView, model=ArticleEntity):
 
 
 def init_admin(app: FastAPI) -> None:
+    print("INIT ADMIN CALLED")
     username = os.environ.get("ADMIN_USERNAME")
     password = os.environ.get("ADMIN_PASSWORD")
     secret_key = os.environ.get("ADMIN_SECRET_KEY")
