@@ -2,7 +2,28 @@ import os
 import secrets
 
 from fastapi import FastAPI
-from rds_postgres.models import Article, ArticleEntity, Entity, Story
+from rds_postgres.models import (
+    Article,
+    ArticleCluster,
+    ArticleClusterArticle,
+    ArticleEmbedding,
+    ArticleEntity,
+    ArticleLocation,
+    ArticlePerson,
+    ArticleStory,
+    ArticleTopic,
+    Entity,
+    Location,
+    LocationAlias,
+    Person,
+    PersonAlias,
+    Story,
+    StoryLocation,
+    StoryPerson,
+    StoryStory,
+    StoryTopic,
+    Topic,
+)
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
@@ -35,7 +56,13 @@ class _AdminAuth(AuthenticationBackend):
         return bool(request.session.get("authenticated"))
 
 
-class ArticleAdmin(ModelView, model=Article):
+class _ReadOnlyModelView(ModelView):
+    can_create = False
+    can_delete = False
+    can_edit = False
+
+
+class ArticleAdmin(_ReadOnlyModelView, model=Article):
     column_list = [
         Article.id,
         Article.source,
@@ -43,32 +70,52 @@ class ArticleAdmin(ModelView, model=Article):
         Article.published_at,
         Article.ingested_at,
     ]
-    can_create = False
-    can_delete = False
-    can_edit = False
 
 
-class StoryAdmin(ModelView, model=Story):
+class ArticleEmbeddingAdmin(_ReadOnlyModelView, model=ArticleEmbedding):
     column_list = [
-        Story.id,
-        Story.title,
-        Story.story_period,
-        Story.generated_at,
-        Story.updated_at,
+        ArticleEmbedding.article_id,
+        ArticleEmbedding.embedding_model,
+        ArticleEmbedding.embedded_text,
     ]
-    can_create = False
-    can_delete = False
-    can_edit = False
 
 
-class EntityAdmin(ModelView, model=Entity):
-    column_list = [Entity.type, Entity.name]
-    can_create = False
-    can_delete = False
-    can_edit = False
+class ArticleClusterAdmin(_ReadOnlyModelView, model=ArticleCluster):
+    column_list = [ArticleCluster.article_cluster_id, ArticleCluster.cluster_period]
 
 
-class ArticleEntityAdmin(ModelView, model=ArticleEntity):
+class ArticleClusterArticleAdmin(_ReadOnlyModelView, model=ArticleClusterArticle):
+    column_list = [
+        ArticleClusterArticle.article_cluster_id,
+        ArticleClusterArticle.article_id,
+    ]
+
+
+class ArticleTopicAdmin(_ReadOnlyModelView, model=ArticleTopic):
+    column_list = [ArticleTopic.article_id, ArticleTopic.topic]
+
+
+class ArticleStoryAdmin(_ReadOnlyModelView, model=ArticleStory):
+    column_list = [ArticleStory.article_id, ArticleStory.story_id]
+
+
+class ArticleLocationAdmin(_ReadOnlyModelView, model=ArticleLocation):
+    column_list = [
+        ArticleLocation.article_id,
+        ArticleLocation.wikidata_qid,
+        ArticleLocation.name,
+    ]
+
+
+class ArticlePersonAdmin(_ReadOnlyModelView, model=ArticlePerson):
+    column_list = [
+        ArticlePerson.article_id,
+        ArticlePerson.wikidata_qid,
+        ArticlePerson.name,
+    ]
+
+
+class ArticleEntityAdmin(_ReadOnlyModelView, model=ArticleEntity):
     column_list = [
         ArticleEntity.article_id,
         ArticleEntity.entity_type,
@@ -76,13 +123,69 @@ class ArticleEntityAdmin(ModelView, model=ArticleEntity):
         ArticleEntity.entity_count,
         ArticleEntity.entity_in_article_title,
     ]
-    can_create = False
-    can_delete = False
-    can_edit = False
+
+
+class StoryAdmin(_ReadOnlyModelView, model=Story):
+    column_list = [
+        Story.id,
+        Story.title,
+        Story.story_period,
+        Story.generated_at,
+        Story.updated_at,
+    ]
+
+
+class StoryTopicAdmin(_ReadOnlyModelView, model=StoryTopic):
+    column_list = [StoryTopic.story_id, StoryTopic.topic]
+
+
+class StoryLocationAdmin(_ReadOnlyModelView, model=StoryLocation):
+    column_list = [StoryLocation.story_id, StoryLocation.wikidata_qid]
+
+
+class StoryPersonAdmin(_ReadOnlyModelView, model=StoryPerson):
+    column_list = [StoryPerson.story_id, StoryPerson.wikidata_qid]
+
+
+class StoryStoryAdmin(_ReadOnlyModelView, model=StoryStory):
+    column_list = [StoryStory.story_id_1, StoryStory.story_id_2]
+
+
+class EntityAdmin(_ReadOnlyModelView, model=Entity):
+    column_list = [Entity.type, Entity.name]
+
+
+class TopicAdmin(_ReadOnlyModelView, model=Topic):
+    column_list = [Topic.topic]
+
+
+class LocationAdmin(_ReadOnlyModelView, model=Location):
+    column_list = [
+        Location.wikidata_qid,
+        Location.name,
+        Location.location_type,
+        Location.country_code,
+    ]
+
+
+class LocationAliasAdmin(_ReadOnlyModelView, model=LocationAlias):
+    column_list = [LocationAlias.alias, LocationAlias.wikidata_qid]
+
+
+class PersonAdmin(_ReadOnlyModelView, model=Person):
+    column_list = [
+        Person.wikidata_qid,
+        Person.name,
+        Person.description,
+        Person.nationalities,
+    ]
+
+
+class PersonAliasAdmin(_ReadOnlyModelView, model=PersonAlias):
+    column_list = [PersonAlias.alias, PersonAlias.wikidata_qid]
 
 
 def init_admin(app: FastAPI) -> None:
-    print("INIT ADMIN CALLED")
     username = os.environ.get("ADMIN_USERNAME")
     password = os.environ.get("ADMIN_PASSWORD")
     secret_key = os.environ.get("ADMIN_SECRET_KEY")
@@ -96,15 +199,26 @@ def init_admin(app: FastAPI) -> None:
         )
         return
 
-    print("ADMIN MOUNTING at /admin/db")
-
     auth = _AdminAuth(secret_key=secret_key, username=username, password=password)
     admin = Admin(app, engine, authentication_backend=auth, base_url="/admin/db")
 
     admin.add_view(ArticleAdmin)
-    admin.add_view(StoryAdmin)
-    admin.add_view(EntityAdmin)
+    admin.add_view(ArticleEmbeddingAdmin)
+    admin.add_view(ArticleClusterAdmin)
+    admin.add_view(ArticleClusterArticleAdmin)
+    admin.add_view(ArticleTopicAdmin)
+    admin.add_view(ArticleStoryAdmin)
+    admin.add_view(ArticleLocationAdmin)
+    admin.add_view(ArticlePersonAdmin)
     admin.add_view(ArticleEntityAdmin)
-
-    for route in app.routes:
-        print("ROUTE:", getattr(route, "path", route))
+    admin.add_view(StoryAdmin)
+    admin.add_view(StoryTopicAdmin)
+    admin.add_view(StoryLocationAdmin)
+    admin.add_view(StoryPersonAdmin)
+    admin.add_view(StoryStoryAdmin)
+    admin.add_view(EntityAdmin)
+    admin.add_view(TopicAdmin)
+    admin.add_view(LocationAdmin)
+    admin.add_view(LocationAliasAdmin)
+    admin.add_view(PersonAdmin)
+    admin.add_view(PersonAliasAdmin)

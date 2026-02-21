@@ -16,6 +16,9 @@ poetry run ruff check .                       # Lint
 poetry run ruff format .                      # Format
 poetry run mypy app                           # Type check
 poetry run pytest tests/unit -v               # Run unit tests
+poetry run pytest tests/unit/test_stories_service.py -v                            # Single file
+poetry run pytest tests/unit/test_stories_service.py::TestListStories -v           # Single class
+poetry run pytest tests/unit/test_stories_service.py::TestListStories::test_name -v # Single test
 poetry run pre-commit install                 # Install pre-commit hooks (once)
 ```
 
@@ -23,7 +26,7 @@ poetry run pre-commit install                 # Install pre-commit hooks (once)
 
 **Layered pattern:** Routes → Services → Queries, with Pydantic schemas for validation.
 
-- `app/routes/` — FastAPI endpoint handlers. Grouped under `/admin` and `/news` prefixes.
+- `app/routes/` — FastAPI endpoint handlers. Grouped under `/admin`, `/landing`, and `/news` prefixes.
 - `app/services/` — Business logic. Orchestrates queries, assembles response objects, handles async OG image fetching.
 - `app/queries/` — Raw SQLAlchemy database queries. Each function returns DB rows or dicts keyed by entity ID.
 - `app/schemas/` — Pydantic response models and filter enums (`FilterPeriod`, `FilterRegion`, `FilterTopic`).
@@ -37,14 +40,17 @@ poetry run pre-commit install                 # Install pre-commit hooks (once)
 - **Batch fetching:** Services query related data (articles, locations, persons, topics) in bulk using `IN` clauses on story/article IDs, then assemble into per-entity dicts. Follow this pattern for new endpoints.
 - **Async image fetching:** `app/services/utils/image_fetcher.py` uses httpx to fetch OG images concurrently with a 1-hour in-memory cache.
 - **Regional filtering:** `app/queries/news/stories_queries.py` contains `REGION_COUNTRY_CODES`, a hardcoded mapping of ISO 3166-1 alpha-3 codes to regions, used for geographic query filtering via PostGIS joins.
-- **Related stories:** Uses a recursive CTE on the `story_stories` table to traverse the full graph of connected stories.
-- **Date ranges:** `app/services/utils/date_utils.py` converts `FilterPeriod` enums (today/week/month) or explicit from/to dates into datetime ranges.
+- **Related stories:** Uses a recursive CTE on the `story_stories` table to traverse the full graph of connected stories. Errors are caught and return an empty list rather than failing the response.
+- **Date ranges:** `app/services/utils/date_utils.py` converts `FilterPeriod` enums into datetime ranges. `last_24_hours` is a rolling window; `today`/`week`/`month` are calendar-based. Explicit `from_date`/`to_date` always takes precedence over `period`.
+- **Pagination:** Feed endpoints fetch `limit + 1` rows to set a `has_more` boolean, then return only `limit` rows. Offset-based (not cursor-based).
+- **Route testing:** Tests in `tests/unit/test_*_routes.py` set `DATABASE_URL` before importing the app, then override the `get_db` dependency via `app.dependency_overrides[get_db]`.
 
 ## API Structure
 
-All routes are mounted under `root_path="/api"`. Two top-level groups:
+All routes are mounted under `root_path="/api"`. Three top-level groups:
 
 - `/admin/status/` — Health checks and status badges
+- `/landing/top-stories` — Top 3 stories per region (used by the homepage)
 - `/news/stories/`, `/news/articles/`, `/news/analytics/`, `/news/sources/` — News data
 
 Common query params across news endpoints: `period`, `region`, `topic`, `from_date`, `to_date`, `limit`. Analytics endpoints also support `interval` (hourly/daily).

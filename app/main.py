@@ -45,28 +45,9 @@ async def fix_request_scheme(request: Request, call_next):  # type: ignore[no-un
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 
-# TEMPORARY DIAGNOSTIC - remove after confirming headers
-@app.middleware("http")
-async def inspect_headers(request: Request, call_next):  # type: ignore[no-untyped-def]
-    print(
-        f"DEBUG: Host={request.headers.get('host')}, "
-        f"Proto={request.headers.get('x-forwarded-proto')}",
-        flush=True,
-    )
-    return await call_next(request)
-
-
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
-
-
-@app.get("/debug-path")
-async def debug_path(request: Request) -> dict[str, str]:
-    return {
-        "path": request.scope["path"],
-        "root_path": request.scope["root_path"],
-    }
 
 
 app.include_router(router)
