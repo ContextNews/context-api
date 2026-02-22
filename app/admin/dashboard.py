@@ -23,14 +23,15 @@ class DashboardView(BaseView):
     name = "Dashboard"
     icon = "fa-solid fa-chart-line"
 
-    @expose("/admin/db/dashboard", methods=["GET"])
+    @expose("/dashboard", methods=["GET"])
     async def dashboard(self, request: Request):  # type: ignore[no-untyped-def]
         with Session(engine) as db:
             data = _collect_all_metrics(db)
 
         return await self.templates.TemplateResponse(
-            "admin/dashboard.html",  # type: ignore[arg-type]
-            {"request": request, **data},  # type: ignore[arg-type]
+            request,
+            "admin/dashboard.html",
+            context=data,
         )
 
 
