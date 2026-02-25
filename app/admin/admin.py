@@ -65,8 +65,11 @@ class ArticleAdmin(_ReadOnlyModelView, model=Article):
         Article.id,
         Article.source,
         Article.title,
+        Article.summary,
+        Article.url,
         Article.published_at,
         Article.ingested_at,
+        Article.text,
     ]
 
 
@@ -75,6 +78,7 @@ class ArticleEmbeddingAdmin(_ReadOnlyModelView, model=ArticleEmbedding):
         ArticleEmbedding.article_id,
         ArticleEmbedding.embedding_model,
         ArticleEmbedding.embedded_text,
+        ArticleEmbedding.created_at,
     ]
 
 
@@ -94,7 +98,11 @@ class ArticleTopicAdmin(_ReadOnlyModelView, model=ArticleTopic):
 
 
 class ArticleStoryAdmin(_ReadOnlyModelView, model=ArticleStory):
-    column_list = [ArticleStory.article_id, ArticleStory.story_id]
+    column_list = [
+        ArticleStory.article_id,
+        ArticleStory.story_id,
+        ArticleStory.assigned_at,
+    ]
 
 
 class ArticleEntityResolvedAdmin(_ReadOnlyModelView, model=ArticleEntityResolved):
@@ -119,9 +127,12 @@ class StoryAdmin(_ReadOnlyModelView, model=Story):
     column_list = [
         Story.id,
         Story.title,
+        Story.summary,
+        Story.key_points,
         Story.story_period,
         Story.created_at,
         Story.updated_at,
+        Story.parent_story_id,
     ]
 
 
@@ -130,7 +141,12 @@ class StoryTopicAdmin(_ReadOnlyModelView, model=StoryTopic):
 
 
 class StoryEntityAdmin(_ReadOnlyModelView, model=StoryEntity):
-    column_list = [StoryEntity.story_id, StoryEntity.qid]
+    column_list = [
+        StoryEntity.story_id,
+        StoryEntity.qid,
+        StoryEntity.score,
+        StoryEntity.role,
+    ]
 
 
 class StoryEdgeAdmin(_ReadOnlyModelView, model=StoryEdge):
@@ -139,6 +155,7 @@ class StoryEdgeAdmin(_ReadOnlyModelView, model=StoryEdge):
         StoryEdge.to_story_id,
         StoryEdge.relation_type,
         StoryEdge.score,
+        StoryEdge.created_at,
     ]
 
 
@@ -152,6 +169,7 @@ class KBEntityAdmin(_ReadOnlyModelView, model=KBEntity):
         KBEntity.entity_type,
         KBEntity.name,
         KBEntity.description,
+        KBEntity.image_url,
     ]
 
 

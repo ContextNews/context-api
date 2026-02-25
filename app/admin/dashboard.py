@@ -8,6 +8,7 @@ from rds_postgres.models import (
     ArticleStory,
     ArticleTopic,
     KBEntity,
+    KBEntityAlias,
     Story,
     StoryEntity,
 )
@@ -125,14 +126,12 @@ def _topic_distribution(db: Session, limit: int = 25) -> tuple[list[str], list[i
 
 def _entity_resolution(db: Session, entity_type: str) -> dict:  # type: ignore[type-arg]
     """
-    Compute resolution rate for GPE or PERSON entities.
+    Compute resolution rate for GPE or PERSON entities, and list mention texts
+    that have no matching alias in the knowledge base (i.e. entities genuinely
+    missing from the KB, not just articles where the pipeline didn't run).
 
-    Compares articles with raw NER mentions (ArticleEntityMention) against
-    articles that have at least one KB-resolved entity of the matching type
-    (ArticleEntityResolved joined with KBEntity).
-
-    entity_type should be an uppercase NER type: 'GPE' or 'PERSON'.
-    kb_entity_type is the matching KBEntity.entity_type: 'location' or 'person'.
+    entity_type: uppercase NER type — 'GPE' or 'PERSON'.
+    kb_entity_type: matching KBEntity.entity_type — 'location' or 'person'.
     """
     kb_entity_type = "location" if entity_type == "GPE" else "person"
 
@@ -153,21 +152,22 @@ def _entity_resolution(db: Session, entity_type: str) -> dict:  # type: ignore[t
 
     resolution_pct = round(resolved / total * 100, 1) if total else 0.0
 
-    # Top mention texts from articles that have no resolved entity of this type
-    resolved_article_ids = (
-        db.query(ArticleEntityResolved.article_id)
-        .join(KBEntity, KBEntity.qid == ArticleEntityResolved.qid)
+    # Top mention texts with no matching alias in the KB for this entity type.
+    # Uses UPPER() on both sides for case-insensitive comparison.
+    # alias is a primary key (NOT NULL) so NOT IN is safe from the NULL gotcha.
+    kb_aliases_upper = (
+        db.query(func.upper(KBEntityAlias.alias))
+        .join(KBEntity, KBEntity.qid == KBEntityAlias.qid)
         .filter(KBEntity.entity_type == kb_entity_type)
-        .subquery()
     )
 
     unresolved_rows = (
         db.query(
             ArticleEntityMention.mention_text.label("name"),
-            func.count().label("count"),
+            func.count(func.distinct(ArticleEntityMention.article_id)).label("count"),
         )
         .filter(ArticleEntityMention.ner_type == entity_type)
-        .filter(ArticleEntityMention.article_id.not_in(resolved_article_ids))
+        .filter(func.upper(ArticleEntityMention.mention_text).not_in(kb_aliases_upper))
         .group_by(ArticleEntityMention.mention_text)
         .order_by(desc("count"))
         .limit(20)
