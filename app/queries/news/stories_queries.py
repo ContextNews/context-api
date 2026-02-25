@@ -4,11 +4,11 @@ from typing import Any
 from rds_postgres.models import (
     Article,
     ArticleStory,
-    Location,
-    Person,
+    KBEntity,
+    KBLocation,
+    KBPerson,
     Story,
-    StoryLocation,
-    StoryPerson,
+    StoryEntity,
     StoryTopic,
 )
 from sqlalchemy import func, literal_column, text
@@ -285,9 +285,11 @@ def query_stories(
     if region:
         country_codes = REGION_COUNTRY_CODES.get(region, set())
         query = (
-            query.join(StoryLocation, StoryLocation.story_id == Story.id)
-            .join(Location, Location.wikidata_qid == StoryLocation.wikidata_qid)
-            .filter(Location.country_code.in_(country_codes))
+            query.join(StoryEntity, StoryEntity.story_id == Story.id)
+            .join(KBEntity, KBEntity.qid == StoryEntity.qid)
+            .join(KBLocation, KBLocation.qid == KBEntity.qid)
+            .filter(KBEntity.entity_type == "location")
+            .filter(KBLocation.country_code.in_(country_codes))
             .distinct()
         )
 
@@ -315,29 +317,29 @@ def query_story_by_id(db: Session, story_id: str) -> Story | None:
 
 def query_related_stories(db: Session, story_id: str) -> list[Story]:
     """
-    Traverse the full story_stories graph using a recursive CTE
+    Traverse the story_edges graph using a recursive CTE
     to find all transitively connected stories, not just direct neighbors.
+    story_edges is directional, so we seed from both directions.
     """
     related_ids = [
         row[0]
         for row in db.execute(
             text("""
-                WITH RECURSIVE related AS (
-                    SELECT CAST(:story_id AS varchar) AS id, 0 AS depth
+                WITH RECURSIVE related(id, depth) AS (
+                    SELECT to_story_id AS id, 1
+                    FROM story_edges
+                    WHERE from_story_id = :story_id
                     UNION
-                    SELECT CASE
-                        WHEN ss.story_id_1 = related.id THEN ss.story_id_2
-                        ELSE ss.story_id_1
-                    END,
-                    related.depth + 1
-                    FROM story_stories ss
-                    JOIN related ON (
-                        ss.story_id_1 = related.id
-                        OR ss.story_id_2 = related.id
-                    )
-                        AND related.depth < 10
+                    SELECT from_story_id AS id, 1
+                    FROM story_edges
+                    WHERE to_story_id = :story_id
+                    UNION ALL
+                    SELECT se.to_story_id, r.depth + 1
+                    FROM story_edges se
+                    JOIN related r ON se.from_story_id = r.id
+                    WHERE r.depth < 10
                 )
-                SELECT id FROM related WHERE id != :story_id
+                SELECT DISTINCT id FROM related WHERE id != :story_id
             """),
             {"story_id": story_id},
         ).fetchall()
@@ -390,20 +392,22 @@ def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list[A
 
     rows = (
         db.query(
-            StoryLocation.story_id,
-            Location.wikidata_qid,
-            Location.name,
-            Location.location_type,
-            Location.country_code,
-            func.ST_Y(literal_column("locations.coordinates::geometry")).label(
+            StoryEntity.story_id,
+            KBEntity.qid.label("wikidata_qid"),
+            KBEntity.name,
+            KBLocation.location_type,
+            KBLocation.country_code,
+            func.ST_Y(literal_column("kb_locations.coordinates::geometry")).label(
                 "latitude"
             ),
-            func.ST_X(literal_column("locations.coordinates::geometry")).label(
+            func.ST_X(literal_column("kb_locations.coordinates::geometry")).label(
                 "longitude"
             ),
         )
-        .join(Location, Location.wikidata_qid == StoryLocation.wikidata_qid)
-        .filter(StoryLocation.story_id.in_(story_ids))
+        .join(KBEntity, KBEntity.qid == StoryEntity.qid)
+        .join(KBLocation, KBLocation.qid == KBEntity.qid)
+        .filter(StoryEntity.story_id.in_(story_ids))
+        .filter(KBEntity.entity_type == "location")
         .all()
     )
 
@@ -415,8 +419,8 @@ def query_story_locations(db: Session, story_ids: list[str]) -> dict[str, list[A
                 "name": row.name,
                 "location_type": row.location_type,
                 "country_code": row.country_code,
-                "latitude": row.latitude,
-                "longitude": row.longitude,
+                "latitude": float(row.latitude),
+                "longitude": float(row.longitude),
             }
         )
 
@@ -454,15 +458,17 @@ def query_story_persons(db: Session, story_ids: list[str]) -> dict[str, list[Any
 
     rows = (
         db.query(
-            StoryPerson.story_id,
-            Person.wikidata_qid,
-            Person.name,
-            Person.description,
-            Person.nationalities,
-            Person.image_url,
+            StoryEntity.story_id,
+            KBEntity.qid.label("wikidata_qid"),
+            KBEntity.name,
+            KBEntity.description,
+            KBEntity.image_url,
+            KBPerson.nationalities,
         )
-        .join(Person, Person.wikidata_qid == StoryPerson.wikidata_qid)
-        .filter(StoryPerson.story_id.in_(story_ids))
+        .join(KBEntity, KBEntity.qid == StoryEntity.qid)
+        .join(KBPerson, KBPerson.qid == KBEntity.qid)
+        .filter(StoryEntity.story_id.in_(story_ids))
+        .filter(KBEntity.entity_type == "person")
         .all()
     )
 

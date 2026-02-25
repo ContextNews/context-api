@@ -43,7 +43,18 @@ poetry run pre-commit install                 # Install pre-commit hooks (once)
 - **Related stories:** Uses a recursive CTE on the `story_stories` table to traverse the full graph of connected stories. Errors are caught and return an empty list rather than failing the response.
 - **Date ranges:** `app/services/utils/date_utils.py` converts `FilterPeriod` enums into datetime ranges. `last_24_hours` is a rolling window; `today`/`week`/`month` are calendar-based. Explicit `from_date`/`to_date` always takes precedence over `period`.
 - **Pagination:** Feed endpoints fetch `limit + 1` rows to set a `has_more` boolean, then return only `limit` rows. Offset-based (not cursor-based).
-- **Route testing:** Tests in `tests/unit/test_*_routes.py` set `DATABASE_URL` before importing the app, then override the `get_db` dependency via `app.dependency_overrides[get_db]`.
+- **Route testing:** Tests in `tests/unit/test_*_routes.py` must set `DATABASE_URL` in the environment **before** importing the app — `rds_postgres.connection` reads it at import time. After import, override the `get_db` dependency via `app.dependency_overrides[get_db]`. Mock DB rows with `SimpleNamespace` objects matching the expected column structure.
+
+## Middleware Stack
+
+`app/main.py` registers middleware in this order (innermost to outermost for request processing):
+
+1. **CORS** — allows `localhost:5173` (dev) and the CloudFront distribution
+2. **SessionMiddleware** — required by SQLAdmin for auth session state (`ADMIN_SECRET_KEY`)
+3. **Scheme-fix middleware** — corrects `X-Forwarded-Proto` header so SQLAdmin generates `https://` URLs behind the ALB
+4. **ProxyHeadersMiddleware** — reads `X-Forwarded-*` headers from AWS ALB
+
+SQLAdmin also requires `ADMIN_USERNAME` and `ADMIN_PASSWORD` env vars. If any of the three admin env vars are absent, the admin interface silently skips mounting (logs `ADMIN NOT MOUNTED`).
 
 ## API Structure
 

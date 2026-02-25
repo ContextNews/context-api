@@ -25,7 +25,7 @@ def get_top_locations(
     if interval:
         return query_top_entities_with_history(
             db=db,
-            entity_type="gpe",
+            entity_type="GPE",
             region=region,
             from_date=from_date,
             to_date=to_date,
@@ -35,7 +35,7 @@ def get_top_locations(
 
     return query_top_entities(
         db=db,
-        entity_type="gpe",
+        entity_type="GPE",
         region=region,
         from_date=from_date,
         to_date=to_date,
@@ -57,7 +57,7 @@ def get_top_people(
     if interval:
         return query_top_entities_with_history(
             db=db,
-            entity_type="person",
+            entity_type="PERSON",
             region=region,
             from_date=from_date,
             to_date=to_date,
@@ -67,7 +67,7 @@ def get_top_people(
 
     return query_top_entities(
         db=db,
-        entity_type="person",
+        entity_type="PERSON",
         region=region,
         from_date=from_date,
         to_date=to_date,
@@ -89,7 +89,7 @@ def get_top_organizations(
     if interval:
         return query_top_entities_with_history(
             db=db,
-            entity_type="org",
+            entity_type="ORG",
             region=region,
             from_date=from_date,
             to_date=to_date,
@@ -99,7 +99,7 @@ def get_top_organizations(
 
     return query_top_entities(
         db=db,
-        entity_type="org",
+        entity_type="ORG",
         region=region,
         from_date=from_date,
         to_date=to_date,

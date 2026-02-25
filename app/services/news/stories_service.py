@@ -89,7 +89,7 @@ async def list_stories(
                     for person in persons_by_story.get(story.id, [])
                 ],
                 story_period=story.story_period,
-                generated_at=story.generated_at,
+                created_at=story.created_at,
                 updated_at=story.updated_at,
                 articles=articles_by_story.get(story.id, []),
             )
@@ -150,7 +150,7 @@ async def get_story(db: Session, story_id: str) -> NewsStoryWithRelated | None:
             StoryPersonSchema(**person) for person in persons_by_story.get(story_id, [])
         ],
         story_period=story.story_period,
-        generated_at=story.generated_at,
+        created_at=story.created_at,
         updated_at=story.updated_at,
         articles=articles,
         related_stories=related_stories,

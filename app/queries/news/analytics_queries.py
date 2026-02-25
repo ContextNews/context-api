@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 
-from rds_postgres.models import Article, ArticleEntity
+from rds_postgres.models import Article, ArticleEntityMention
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
@@ -24,14 +24,14 @@ def query_top_entities(
 
     rows = (
         db.query(
-            ArticleEntity.entity_name.label("name"),
-            func.count(func.distinct(ArticleEntity.article_id)).label("count"),
+            ArticleEntityMention.mention_text.label("name"),
+            func.count(func.distinct(ArticleEntityMention.article_id)).label("count"),
         )
-        .join(Article, Article.id == ArticleEntity.article_id)
-        .filter(func.lower(ArticleEntity.entity_type) == entity_type)
+        .join(Article, Article.id == ArticleEntityMention.article_id)
+        .filter(ArticleEntityMention.ner_type == entity_type)
         .filter(Article.published_at >= from_date, Article.published_at < to_date)
-        .group_by(ArticleEntity.entity_name)
-        .order_by(desc("count"), ArticleEntity.entity_name)
+        .group_by(ArticleEntityMention.mention_text)
+        .order_by(desc("count"), ArticleEntityMention.mention_text)
     )
 
     if limit:
@@ -71,15 +71,15 @@ def query_top_entities_with_history(
 
     history_rows = (
         db.query(
-            ArticleEntity.entity_name.label("name"),
+            ArticleEntityMention.mention_text.label("name"),
             time_bucket.label("bucket"),
-            func.count(func.distinct(ArticleEntity.article_id)).label("count"),
+            func.count(func.distinct(ArticleEntityMention.article_id)).label("count"),
         )
-        .join(Article, Article.id == ArticleEntity.article_id)
-        .filter(func.lower(ArticleEntity.entity_type) == entity_type)
-        .filter(ArticleEntity.entity_name.in_(entity_names))
+        .join(Article, Article.id == ArticleEntityMention.article_id)
+        .filter(ArticleEntityMention.ner_type == entity_type)
+        .filter(ArticleEntityMention.mention_text.in_(entity_names))
         .filter(Article.published_at >= from_date, Article.published_at < to_date)
-        .group_by(ArticleEntity.entity_name, time_bucket)
+        .group_by(ArticleEntityMention.mention_text, time_bucket)
         .order_by(time_bucket)
         .all()
     )

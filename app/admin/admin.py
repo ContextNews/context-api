@@ -7,20 +7,17 @@ from rds_postgres.models import (
     ArticleCluster,
     ArticleClusterArticle,
     ArticleEmbedding,
-    ArticleEntity,
-    ArticleLocation,
-    ArticlePerson,
+    ArticleEntityMention,
+    ArticleEntityResolved,
     ArticleStory,
     ArticleTopic,
-    Entity,
-    Location,
-    LocationAlias,
-    Person,
-    PersonAlias,
+    KBEntity,
+    KBEntityAlias,
+    KBLocation,
+    KBPerson,
     Story,
-    StoryLocation,
-    StoryPerson,
-    StoryStory,
+    StoryEdge,
+    StoryEntity,
     StoryTopic,
     Topic,
 )
@@ -100,29 +97,21 @@ class ArticleStoryAdmin(_ReadOnlyModelView, model=ArticleStory):
     column_list = [ArticleStory.article_id, ArticleStory.story_id]
 
 
-class ArticleLocationAdmin(_ReadOnlyModelView, model=ArticleLocation):
+class ArticleEntityResolvedAdmin(_ReadOnlyModelView, model=ArticleEntityResolved):
     column_list = [
-        ArticleLocation.article_id,
-        ArticleLocation.wikidata_qid,
-        ArticleLocation.name,
+        ArticleEntityResolved.article_id,
+        ArticleEntityResolved.qid,
+        ArticleEntityResolved.score,
     ]
 
 
-class ArticlePersonAdmin(_ReadOnlyModelView, model=ArticlePerson):
+class ArticleEntityMentionAdmin(_ReadOnlyModelView, model=ArticleEntityMention):
     column_list = [
-        ArticlePerson.article_id,
-        ArticlePerson.wikidata_qid,
-        ArticlePerson.name,
-    ]
-
-
-class ArticleEntityAdmin(_ReadOnlyModelView, model=ArticleEntity):
-    column_list = [
-        ArticleEntity.article_id,
-        ArticleEntity.entity_type,
-        ArticleEntity.entity_name,
-        ArticleEntity.entity_count,
-        ArticleEntity.entity_in_article_title,
+        ArticleEntityMention.article_id,
+        ArticleEntityMention.ner_type,
+        ArticleEntityMention.mention_text,
+        ArticleEntityMention.mention_count,
+        ArticleEntityMention.in_title,
     ]
 
 
@@ -131,7 +120,7 @@ class StoryAdmin(_ReadOnlyModelView, model=Story):
         Story.id,
         Story.title,
         Story.story_period,
-        Story.generated_at,
+        Story.created_at,
         Story.updated_at,
     ]
 
@@ -140,50 +129,46 @@ class StoryTopicAdmin(_ReadOnlyModelView, model=StoryTopic):
     column_list = [StoryTopic.story_id, StoryTopic.topic]
 
 
-class StoryLocationAdmin(_ReadOnlyModelView, model=StoryLocation):
-    column_list = [StoryLocation.story_id, StoryLocation.wikidata_qid]
+class StoryEntityAdmin(_ReadOnlyModelView, model=StoryEntity):
+    column_list = [StoryEntity.story_id, StoryEntity.qid]
 
 
-class StoryPersonAdmin(_ReadOnlyModelView, model=StoryPerson):
-    column_list = [StoryPerson.story_id, StoryPerson.wikidata_qid]
-
-
-class StoryStoryAdmin(_ReadOnlyModelView, model=StoryStory):
-    column_list = [StoryStory.story_id_1, StoryStory.story_id_2]
-
-
-class EntityAdmin(_ReadOnlyModelView, model=Entity):
-    column_list = [Entity.type, Entity.name]
+class StoryEdgeAdmin(_ReadOnlyModelView, model=StoryEdge):
+    column_list = [
+        StoryEdge.from_story_id,
+        StoryEdge.to_story_id,
+        StoryEdge.relation_type,
+        StoryEdge.score,
+    ]
 
 
 class TopicAdmin(_ReadOnlyModelView, model=Topic):
     column_list = [Topic.topic]
 
 
-class LocationAdmin(_ReadOnlyModelView, model=Location):
+class KBEntityAdmin(_ReadOnlyModelView, model=KBEntity):
     column_list = [
-        Location.wikidata_qid,
-        Location.name,
-        Location.location_type,
-        Location.country_code,
+        KBEntity.qid,
+        KBEntity.entity_type,
+        KBEntity.name,
+        KBEntity.description,
     ]
 
 
-class LocationAliasAdmin(_ReadOnlyModelView, model=LocationAlias):
-    column_list = [LocationAlias.alias, LocationAlias.wikidata_qid]
+class KBEntityAliasAdmin(_ReadOnlyModelView, model=KBEntityAlias):
+    column_list = [KBEntityAlias.alias, KBEntityAlias.qid]
 
 
-class PersonAdmin(_ReadOnlyModelView, model=Person):
+class KBLocationAdmin(_ReadOnlyModelView, model=KBLocation):
     column_list = [
-        Person.wikidata_qid,
-        Person.name,
-        Person.description,
-        Person.nationalities,
+        KBLocation.qid,
+        KBLocation.location_type,
+        KBLocation.country_code,
     ]
 
 
-class PersonAliasAdmin(_ReadOnlyModelView, model=PersonAlias):
-    column_list = [PersonAlias.alias, PersonAlias.wikidata_qid]
+class KBPersonAdmin(_ReadOnlyModelView, model=KBPerson):
+    column_list = [KBPerson.qid, KBPerson.nationalities]
 
 
 def init_admin(app: FastAPI) -> None:
@@ -215,18 +200,15 @@ def init_admin(app: FastAPI) -> None:
     admin.add_view(ArticleClusterArticleAdmin)
     admin.add_view(ArticleTopicAdmin)
     admin.add_view(ArticleStoryAdmin)
-    admin.add_view(ArticleLocationAdmin)
-    admin.add_view(ArticlePersonAdmin)
-    admin.add_view(ArticleEntityAdmin)
+    admin.add_view(ArticleEntityResolvedAdmin)
+    admin.add_view(ArticleEntityMentionAdmin)
     admin.add_view(StoryAdmin)
     admin.add_view(StoryTopicAdmin)
-    admin.add_view(StoryLocationAdmin)
-    admin.add_view(StoryPersonAdmin)
-    admin.add_view(StoryStoryAdmin)
-    admin.add_view(EntityAdmin)
+    admin.add_view(StoryEntityAdmin)
+    admin.add_view(StoryEdgeAdmin)
     admin.add_view(TopicAdmin)
-    admin.add_view(LocationAdmin)
-    admin.add_view(LocationAliasAdmin)
-    admin.add_view(PersonAdmin)
-    admin.add_view(PersonAliasAdmin)
+    admin.add_view(KBEntityAdmin)
+    admin.add_view(KBEntityAliasAdmin)
+    admin.add_view(KBLocationAdmin)
+    admin.add_view(KBPersonAdmin)
     admin.add_base_view(DashboardView)

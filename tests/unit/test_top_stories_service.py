@@ -17,7 +17,7 @@ def _make_story(id="story1", title="Test Story"):
         summary="A summary",
         key_points=["point1"],
         story_period=datetime(2025, 7, 15, 12, 0),
-        generated_at=datetime(2025, 7, 15, 12, 0),
+        created_at=datetime(2025, 7, 15, 12, 0),
         updated_at=datetime(2025, 7, 15, 13, 0),
     )
 

@@ -96,7 +96,7 @@ class TestNewsStory:
             summary="Summary",
             key_points=["p1"],
             story_period=datetime(2025, 1, 1),
-            generated_at=datetime(2025, 1, 1),
+            created_at=datetime(2025, 1, 1),
             updated_at=datetime(2025, 1, 1),
             articles=[],
         )
@@ -112,7 +112,7 @@ class TestNewsStory:
                 # missing summary
                 key_points=[],
                 story_period=datetime(2025, 1, 1),
-                generated_at=datetime(2025, 1, 1),
+                created_at=datetime(2025, 1, 1),
                 updated_at=datetime(2025, 1, 1),
                 articles=[],
             )
@@ -126,7 +126,7 @@ class TestNewsStoryWithRelated:
             summary="Summary",
             key_points=[],
             story_period=datetime(2025, 1, 1),
-            generated_at=datetime(2025, 1, 1),
+            created_at=datetime(2025, 1, 1),
             updated_at=datetime(2025, 1, 1),
             articles=[],
         )
@@ -146,7 +146,7 @@ class TestNewsStoryWithRelated:
             summary="Summary",
             key_points=[],
             story_period=datetime(2025, 1, 1),
-            generated_at=datetime(2025, 1, 1),
+            created_at=datetime(2025, 1, 1),
             updated_at=datetime(2025, 1, 1),
             articles=[],
             related_stories=[related],

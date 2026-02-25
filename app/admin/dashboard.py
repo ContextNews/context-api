@@ -3,16 +3,16 @@ from datetime import UTC, datetime, timedelta
 from rds_postgres.models import (
     Article,
     ArticleEmbedding,
-    ArticleEntity,
-    ArticleLocation,
-    ArticlePerson,
+    ArticleEntityMention,
+    ArticleEntityResolved,
     ArticleStory,
     ArticleTopic,
+    KBEntity,
     Story,
-    StoryLocation,
+    StoryEntity,
 )
 from sqladmin import BaseView, expose
-from sqlalchemy import and_, desc, func
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
@@ -44,8 +44,8 @@ def _collect_all_metrics(db: Session) -> dict:  # type: ignore[type-arg]
     apd_labels, apd_values = _articles_per_day(db)
     aps_labels, aps_values = _articles_per_source(db)
     topic_labels, topic_values = _topic_distribution(db)
-    gpe = _entity_resolution(db, entity_type="gpe")
-    person = _entity_resolution(db, entity_type="person")
+    gpe = _entity_resolution(db, entity_type="GPE")
+    person = _entity_resolution(db, entity_type="PERSON")
     clustering = _clustering_health(db)
     location = _location_health(db)
     embedding = _embedding_coverage(db)
@@ -127,51 +127,48 @@ def _entity_resolution(db: Session, entity_type: str) -> dict:  # type: ignore[t
     """
     Compute resolution rate for GPE or PERSON entities.
 
-    For GPE:   resolved via ArticleLocation (article_id + name match)
-    For PERSON: resolved via ArticlePerson  (article_id + name match)
-    """
-    resolved_model = ArticleLocation if entity_type == "gpe" else ArticlePerson
-    resolved_fk = resolved_model.article_id
-    resolved_name = resolved_model.name
+    Compares articles with raw NER mentions (ArticleEntityMention) against
+    articles that have at least one KB-resolved entity of the matching type
+    (ArticleEntityResolved joined with KBEntity).
 
+    entity_type should be an uppercase NER type: 'GPE' or 'PERSON'.
+    kb_entity_type is the matching KBEntity.entity_type: 'location' or 'person'.
+    """
+    kb_entity_type = "location" if entity_type == "GPE" else "person"
+
+    # Articles that have at least one NER mention of this type
     total: int = (
-        db.query(func.count())
-        .select_from(ArticleEntity)
-        .filter(func.lower(ArticleEntity.entity_type) == entity_type)
+        db.query(func.count(func.distinct(ArticleEntityMention.article_id)))
+        .filter(ArticleEntityMention.ner_type == entity_type)
         .scalar()
     ) or 0
 
+    # Articles that have at least one resolved KB entity of the matching type
     resolved: int = (
-        db.query(func.count())
-        .select_from(ArticleEntity)
-        .join(
-            resolved_model,
-            and_(
-                resolved_fk == ArticleEntity.article_id,
-                resolved_name == ArticleEntity.entity_name,
-            ),
-        )
-        .filter(func.lower(ArticleEntity.entity_type) == entity_type)
+        db.query(func.count(func.distinct(ArticleEntityResolved.article_id)))
+        .join(KBEntity, KBEntity.qid == ArticleEntityResolved.qid)
+        .filter(KBEntity.entity_type == kb_entity_type)
         .scalar()
     ) or 0
 
     resolution_pct = round(resolved / total * 100, 1) if total else 0.0
 
+    # Top mention texts from articles that have no resolved entity of this type
+    resolved_article_ids = (
+        db.query(ArticleEntityResolved.article_id)
+        .join(KBEntity, KBEntity.qid == ArticleEntityResolved.qid)
+        .filter(KBEntity.entity_type == kb_entity_type)
+        .subquery()
+    )
+
     unresolved_rows = (
         db.query(
-            ArticleEntity.entity_name.label("name"),
+            ArticleEntityMention.mention_text.label("name"),
             func.count().label("count"),
         )
-        .outerjoin(
-            resolved_model,
-            and_(
-                resolved_fk == ArticleEntity.article_id,
-                resolved_name == ArticleEntity.entity_name,
-            ),
-        )
-        .filter(func.lower(ArticleEntity.entity_type) == entity_type)
-        .filter(resolved_fk.is_(None))
-        .group_by(ArticleEntity.entity_name)
+        .filter(ArticleEntityMention.ner_type == entity_type)
+        .filter(ArticleEntityMention.article_id.not_in(resolved_article_ids))
+        .group_by(ArticleEntityMention.mention_text)
         .order_by(desc("count"))
         .limit(20)
         .all()
@@ -244,23 +241,36 @@ def _clustering_health(db: Session) -> dict:  # type: ignore[type-arg]
 
 
 def _location_health(db: Session) -> dict:  # type: ignore[type-arg]
+    stories_with_location = (
+        db.query(StoryEntity.story_id)
+        .join(KBEntity, KBEntity.qid == StoryEntity.qid)
+        .filter(KBEntity.entity_type == "location")
+        .distinct()
+        .subquery()
+    )
+
     stories_no_location: int = (
         db.query(func.count(Story.id))
-        .outerjoin(StoryLocation, StoryLocation.story_id == Story.id)
-        .filter(StoryLocation.story_id.is_(None))
+        .outerjoin(
+            stories_with_location,
+            stories_with_location.c.story_id == Story.id,
+        )
+        .filter(stories_with_location.c.story_id.is_(None))
         .scalar()
     ) or 0
 
-    subq = (
+    loc_count_subq = (
         db.query(
-            StoryLocation.story_id,
-            func.count(StoryLocation.wikidata_qid).label("loc_count"),
+            StoryEntity.story_id,
+            func.count(StoryEntity.qid).label("loc_count"),
         )
-        .group_by(StoryLocation.story_id)
+        .join(KBEntity, KBEntity.qid == StoryEntity.qid)
+        .filter(KBEntity.entity_type == "location")
+        .group_by(StoryEntity.story_id)
         .subquery()
     )
     avg_locations_per_story = (
-        db.query(func.round(func.avg(subq.c.loc_count), 1)).scalar() or 0
+        db.query(func.round(func.avg(loc_count_subq.c.loc_count), 1)).scalar() or 0
     )
 
     return {

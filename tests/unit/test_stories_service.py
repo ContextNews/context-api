@@ -16,7 +16,7 @@ def _make_story(
     summary="A summary",
     key_points=_SENTINEL,
     story_period=None,
-    generated_at=None,
+    created_at=None,
     updated_at=None,
     parent_story_id=None,
 ):
@@ -26,7 +26,7 @@ def _make_story(
         summary=summary,
         key_points=["point1"] if key_points is _SENTINEL else key_points,
         story_period=story_period or datetime(2025, 7, 15, 12, 0),
-        generated_at=generated_at or datetime(2025, 7, 15, 12, 0),
+        created_at=created_at or datetime(2025, 7, 15, 12, 0),
         updated_at=updated_at or datetime(2025, 7, 15, 13, 0),
         parent_story_id=parent_story_id,
     )

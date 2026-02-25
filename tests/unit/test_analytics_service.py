@@ -16,7 +16,7 @@ class TestGetTopLocations:
         result = get_top_locations(MagicMock(), FilterPeriod.today)
         assert result == []
         mock_query.assert_called_once()
-        assert mock_query.call_args.kwargs["entity_type"] == "gpe"
+        assert mock_query.call_args.kwargs["entity_type"] == "GPE"
 
     @patch(f"{QUERIES}.query_top_entities_with_history", return_value=[])
     def test_calls_history_query_with_interval(self, mock_query):
@@ -25,7 +25,7 @@ class TestGetTopLocations:
         )
         assert result == []
         mock_query.assert_called_once()
-        assert mock_query.call_args.kwargs["entity_type"] == "gpe"
+        assert mock_query.call_args.kwargs["entity_type"] == "GPE"
         assert mock_query.call_args.kwargs["interval"] == Interval.hourly
 
 
@@ -33,19 +33,19 @@ class TestGetTopPeople:
     @patch(f"{QUERIES}.query_top_entities", return_value=[])
     def test_uses_person_entity_type(self, mock_query):
         get_top_people(MagicMock(), FilterPeriod.today)
-        assert mock_query.call_args.kwargs["entity_type"] == "person"
+        assert mock_query.call_args.kwargs["entity_type"] == "PERSON"
 
     @patch(f"{QUERIES}.query_top_entities_with_history", return_value=[])
     def test_uses_person_entity_type_with_interval(self, mock_query):
         get_top_people(MagicMock(), FilterPeriod.week, interval=Interval.daily)
-        assert mock_query.call_args.kwargs["entity_type"] == "person"
+        assert mock_query.call_args.kwargs["entity_type"] == "PERSON"
 
 
 class TestGetTopOrganizations:
     @patch(f"{QUERIES}.query_top_entities", return_value=[])
     def test_uses_org_entity_type(self, mock_query):
         get_top_organizations(MagicMock(), FilterPeriod.today)
-        assert mock_query.call_args.kwargs["entity_type"] == "org"
+        assert mock_query.call_args.kwargs["entity_type"] == "ORG"
 
     @patch(f"{QUERIES}.query_top_entities", return_value=[])
     def test_passes_region_filter(self, mock_query):

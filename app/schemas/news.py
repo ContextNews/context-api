@@ -85,7 +85,7 @@ class NewsStory(BaseModel):
     locations: list[ArticleLocationSchema] = []
     persons: list[StoryPersonSchema] = []
     story_period: datetime
-    generated_at: datetime
+    created_at: datetime
     updated_at: datetime
     articles: list[NewsStoryArticle]
 

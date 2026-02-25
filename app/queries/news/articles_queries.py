@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from rds_postgres.models import Article, ArticleLocation, Location
+from rds_postgres.models import Article, ArticleEntityResolved, KBEntity, KBLocation
 from sqlalchemy import desc, func, literal_column
 from sqlalchemy.orm import Session
 
@@ -40,20 +40,22 @@ def query_article_locations(
 
     rows = (
         db.query(
-            ArticleLocation.article_id,
-            Location.wikidata_qid,
-            Location.name,
-            Location.location_type,
-            Location.country_code,
-            func.ST_Y(literal_column("locations.coordinates::geometry")).label(
+            ArticleEntityResolved.article_id,
+            KBEntity.qid.label("wikidata_qid"),
+            KBEntity.name,
+            KBLocation.location_type,
+            KBLocation.country_code,
+            func.ST_Y(literal_column("kb_locations.coordinates::geometry")).label(
                 "latitude"
             ),
-            func.ST_X(literal_column("locations.coordinates::geometry")).label(
+            func.ST_X(literal_column("kb_locations.coordinates::geometry")).label(
                 "longitude"
             ),
         )
-        .join(Location, Location.wikidata_qid == ArticleLocation.wikidata_qid)
-        .filter(ArticleLocation.article_id.in_(article_ids))
+        .join(KBEntity, KBEntity.qid == ArticleEntityResolved.qid)
+        .join(KBLocation, KBLocation.qid == KBEntity.qid)
+        .filter(ArticleEntityResolved.article_id.in_(article_ids))
+        .filter(KBEntity.entity_type == "location")
         .all()
     )
 
@@ -65,8 +67,8 @@ def query_article_locations(
                 "name": row.name,
                 "location_type": row.location_type,
                 "country_code": row.country_code,
-                "latitude": row.latitude,
-                "longitude": row.longitude,
+                "latitude": float(row.latitude),
+                "longitude": float(row.longitude),
             }
         )
 
