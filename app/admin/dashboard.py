@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
-from rds_postgres.models import (
+from context_db.models import (
     Article,
     ArticleEmbedding,
     ArticleEntityMention,

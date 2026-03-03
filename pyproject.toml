@@ -47,7 +47,7 @@ disallow_untyped_defs = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = "rds_postgres.*"
+module = "context_db.*"
 ignore_missing_imports = true
 follow_imports = "skip"
 

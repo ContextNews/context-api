@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Set dummy DATABASE_URL before importing app — the connection is never used
-# because we override get_db, but rds_postgres.connection reads it at import time.
+# because we override get_db, but context_db.connection reads it at import time.
 os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost:5432/test")
 
 from app.db import get_db  # noqa: E402

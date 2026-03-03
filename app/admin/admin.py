@@ -1,8 +1,7 @@
 import os
 import secrets
 
-from fastapi import FastAPI
-from rds_postgres.models import (
+from context_db.models import (
     Article,
     ArticleCluster,
     ArticleClusterArticle,
@@ -21,6 +20,7 @@ from rds_postgres.models import (
     StoryTopic,
     Topic,
 )
+from fastapi import FastAPI
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request

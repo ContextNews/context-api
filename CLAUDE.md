@@ -31,7 +31,7 @@ poetry run pre-commit install                 # Install pre-commit hooks (once)
 - `app/queries/` — Raw SQLAlchemy database queries. Each function returns DB rows or dicts keyed by entity ID.
 - `app/schemas/` — Pydantic response models and filter enums (`FilterPeriod`, `FilterRegion`, `FilterTopic`).
 
-**Database models** come from an external package: `context-data-schema` (installed from `github.com/ContextNews/context-data-schemas`). Models are imported as `from rds_postgres.models import Story, Article, ...` and the session factory is `rds_postgres.connection.get_session()`.
+**Database models** come from an external package: `context-data-schema` (installed from `github.com/ContextNews/context-data-schemas`). Models are imported as `from context_db.models import Story, Article, ...` and the session factory is `context_db.connection.get_session()`.
 
 **Database session** is provided via FastAPI dependency injection through `app/db.py:get_db()`, which loads `.env` via dotenv before importing the session factory.
 
@@ -43,7 +43,7 @@ poetry run pre-commit install                 # Install pre-commit hooks (once)
 - **Related stories:** Uses a recursive CTE on the `story_stories` table to traverse the full graph of connected stories. Errors are caught and return an empty list rather than failing the response.
 - **Date ranges:** `app/services/utils/date_utils.py` converts `FilterPeriod` enums into datetime ranges. `last_24_hours` is a rolling window; `today`/`week`/`month` are calendar-based. Explicit `from_date`/`to_date` always takes precedence over `period`.
 - **Pagination:** Feed endpoints fetch `limit + 1` rows to set a `has_more` boolean, then return only `limit` rows. Offset-based (not cursor-based).
-- **Route testing:** Tests in `tests/unit/test_*_routes.py` must set `DATABASE_URL` in the environment **before** importing the app — `rds_postgres.connection` reads it at import time. After import, override the `get_db` dependency via `app.dependency_overrides[get_db]`. Mock DB rows with `SimpleNamespace` objects matching the expected column structure.
+- **Route testing:** Tests in `tests/unit/test_*_routes.py` must set `DATABASE_URL` in the environment **before** importing the app — `context_db.connection` reads it at import time. After import, override the `get_db` dependency via `app.dependency_overrides[get_db]`. Mock DB rows with `SimpleNamespace` objects matching the expected column structure.
 
 ## Middleware Stack
 

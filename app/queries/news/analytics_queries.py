@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 
-from rds_postgres.models import Article, ArticleEntityMention
+from context_db.models import Article, ArticleEntityMention
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 

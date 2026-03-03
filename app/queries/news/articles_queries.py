@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from rds_postgres.models import Article, ArticleEntityResolved, KBEntity, KBLocation
+from context_db.models import Article, ArticleEntityResolved, KBEntity, KBLocation
 from sqlalchemy import desc, func, literal_column
 from sqlalchemy.orm import Session
 

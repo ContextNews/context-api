@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from rds_postgres.models import (
+from context_db.models import (
     Article,
     ArticleStory,
     KBEntity,
