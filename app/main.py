@@ -20,6 +20,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # local dev frontend
         "https://d1j7fhf5s3t3r4.cloudfront.net",
+        "https://context-web-app-production.up.railway.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
