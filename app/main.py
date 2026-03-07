@@ -46,7 +46,7 @@ async def fix_request_scheme(request: Request, call_next):  # type: ignore[no-un
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
