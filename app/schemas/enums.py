@@ -19,17 +19,22 @@ class FilterRegion(StrEnum):
 
 
 class FilterTopic(StrEnum):
-    politics = "Politics"
-    conflict_and_security = "Conflict & Security"
-    crime = "Crime"
-    business = "Business"
-    economy = "Economy"
-    technology = "Technology"
-    health = "Health"
-    environment = "Environment"
-    society = "Society"
-    sports = "Sports"
-    entertainment = "Entertainment"
+    business = "business"
+    conflict = "conflict"
+    crime = "crime"
+    economy = "economy"
+    education = "education"
+    entertainment = "entertainment"
+    environment = "environment"
+    geopolitics = "geopolitics"
+    health = "health"
+    law = "law"
+    markets = "markets"
+    politics = "politics"
+    science = "science"
+    society = "society"
+    sports = "sports"
+    technology = "technology"
 
 
 class Interval(StrEnum):

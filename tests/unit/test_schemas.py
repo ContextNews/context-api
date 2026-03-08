@@ -28,8 +28,9 @@ class TestFilterEnums:
         assert FilterRegion.europe.value == "europe"
 
     def test_filter_topic_values(self):
-        assert FilterTopic.politics.value == "Politics"
-        assert FilterTopic.conflict_and_security.value == "Conflict & Security"
+        assert FilterTopic.politics.value == "politics"
+        assert FilterTopic.conflict.value == "conflict"
+        assert len(FilterTopic) == 16
 
     def test_interval_values(self):
         assert Interval.hourly.value == "hourly"
