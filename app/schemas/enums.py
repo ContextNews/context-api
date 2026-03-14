@@ -40,3 +40,11 @@ class FilterTopic(StrEnum):
 class Interval(StrEnum):
     hourly = "hourly"
     daily = "daily"
+
+
+class TSFilterPeriod(StrEnum):
+    one_year = "1y"
+    five_years = "5y"
+    ten_years = "10y"
+    twenty_years = "20y"
+    all_time = "all"

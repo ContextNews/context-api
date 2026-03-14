@@ -40,11 +40,12 @@ docker run --rm -p 8000:8000 -e DATABASE_URL="postgresql+psycopg2://user:pass@ho
 
 ## API Structure
 
-The API is organized into three main sections:
+The API is organized into four main sections:
 
 - `/admin` - Administrative endpoints (status checks)
 - `/landing` - Landing page endpoints (top stories by region)
 - `/news` - News data endpoints (stories, articles, analytics, sources)
+- `/data` - Time series data endpoints (indicators, entities, datapoints)
 
 ### Common Query Parameters
 
@@ -115,6 +116,39 @@ When `interval` is provided, the response includes a `history` array with counts
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/news/sources/` | List all news sources |
+
+### Data - Entities
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/data/entities` | List entities, optionally filtered by type |
+| GET | `/data/entities/{entity_id}` | Get a single entity by ID |
+
+Supports `entity_type` query param: `country`, `region`, `union`, `bloc`.
+
+### Data - Sources & Indicators
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/data/sources` | List all data sources (e.g. World Bank, IMF) |
+| GET | `/data/indicators` | List indicators, optionally filtered by source or frequency |
+| GET | `/data/indicators/{indicator_id}` | Get a single indicator by ID |
+
+`/data/indicators` supports `source_id` (int) and `frequency` (`annual`, `quarterly`, `monthly`) query params.
+
+### Data - Datapoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/data/datapoints` | Fetch time series data grouped by (indicator, entity) |
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `indicator_id` | string | **Yes** | Repeatable: `?indicator_id=X&indicator_id=Y` |
+| `entity_id` | string | No | Repeatable. Omit to get all entities for the given indicators |
+| `period` | enum | No | `1y`, `5y` (default), `10y`, `20y`, `all` |
+| `from_date` | date | No | Explicit start date, overrides `period` |
+| `to_date` | date | No | Explicit end date, overrides `period` |
 
 ## Response Shapes
 
@@ -333,6 +367,36 @@ With `interval=daily` parameter:
       {"timestamp": "2024-01-01T00:00:00Z", "count": 72},
       {"timestamp": "2024-01-02T00:00:00Z", "count": 85},
       {"timestamp": "2024-01-03T00:00:00Z", "count": 68}
+    ]
+  }
+]
+```
+
+### `GET /data/datapoints`
+
+```json
+[
+  {
+    "indicator": {
+      "id": "NY.GDP.MKTP.CD",
+      "name": "GDP (current US$)",
+      "unit": "USD",
+      "frequency": "annual",
+      "source": {
+        "id": 1,
+        "name": "World Bank",
+        "url": "https://data.worldbank.org"
+      }
+    },
+    "entity": {
+      "id": "Q142",
+      "name": "France",
+      "entity_type": "country"
+    },
+    "datapoints": [
+      { "date": "2020-01-01", "value": 2694228152353.0 },
+      { "date": "2021-01-01", "value": 2957878836969.0 },
+      { "date": "2022-01-01", "value": 2779092039232.0 }
     ]
   }
 ]
