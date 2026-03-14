@@ -116,7 +116,7 @@ files = [
 markers = {main = "platform_system == \"Windows\" or sys_platform == \"win32\"", dev = "sys_platform == \"win32\""}
 
 [[package]]
-name = "context-data-schema"
+name = "context-db"
 version = "0.1.0"
 description = "Shared database models and migrations"
 optional = false
@@ -137,7 +137,7 @@ sqlalchemy = "^2.0.29"
 type = "git"
 url = "https://github.com/ContextNews/context-data-schemas.git"
 reference = "main"
-resolved_reference = "ee6e4562d8dc9bf4382f381fee738286b0f839cf"
+resolved_reference = "25822b6e47d1878754d06e062c86613c45ce826d"
 
 [[package]]
 name = "coverage"
@@ -1995,4 +1995,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "9a4bfe891077ad38be285d15f1c5a85c8a670b0f42d806e0189122769c39d6da"
+content-hash = "e6df73488a86ff4e1965e07373b9526408572a01b67f8697760978c0d525df09"

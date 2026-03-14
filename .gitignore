@@ -37,3 +37,5 @@ pip-wheel-metadata/
 .DS_Store
 
 plans/
+
+CLAUDE.md
