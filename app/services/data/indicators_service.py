@@ -21,26 +21,25 @@ def list_indicators(
     rows = query_indicators(db, source_id=source_id, frequency=frequency)
     return [
         TSIndicatorSchema(
-            id=i.id,
-            name=i.name,
-            unit=i.unit,
-            frequency=i.frequency,
-            source=TSSourceSchema(id=i.source.id, name=i.source.name, url=i.source.url),
+            id=ind.id,
+            name=ind.name,
+            unit=ind.unit,
+            frequency=ind.frequency,
+            source=TSSourceSchema(id=src.id, name=src.name, url=src.url),
         )
-        for i in rows
+        for ind, src in rows
     ]
 
 
 def get_indicator(db: Session, indicator_id: str) -> TSIndicatorSchema | None:
-    row = query_indicator(db, indicator_id)
-    if not row:
+    result = query_indicator(db, indicator_id)
+    if not result:
         return None
+    ind, src = result
     return TSIndicatorSchema(
-        id=row.id,
-        name=row.name,
-        unit=row.unit,
-        frequency=row.frequency,
-        source=TSSourceSchema(
-            id=row.source.id, name=row.source.name, url=row.source.url
-        ),
+        id=ind.id,
+        name=ind.name,
+        unit=ind.unit,
+        frequency=ind.frequency,
+        source=TSSourceSchema(id=src.id, name=src.name, url=src.url),
     )

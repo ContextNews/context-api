@@ -50,10 +50,11 @@ def get_datapoints(
 
     result: list[TSSeriesSchema] = []
     for (indicator_id, entity_id), datapoints in series.items():
-        ind = indicators_by_id.get(indicator_id)
+        ind_src = indicators_by_id.get(indicator_id)
         ent = entities_by_id.get(entity_id)
-        if not ind or not ent:
+        if not ind_src or not ent:
             continue
+        ind, src = ind_src
         result.append(
             TSSeriesSchema(
                 indicator=TSIndicatorSchema(
@@ -61,11 +62,7 @@ def get_datapoints(
                     name=ind.name,
                     unit=ind.unit,
                     frequency=ind.frequency,
-                    source=TSSourceSchema(
-                        id=ind.source.id,
-                        name=ind.source.name,
-                        url=ind.source.url,
-                    ),
+                    source=TSSourceSchema(id=src.id, name=src.name, url=src.url),
                 ),
                 entity=TSEntitySchema(
                     id=ent.id,
