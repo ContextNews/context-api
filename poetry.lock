@@ -137,7 +137,7 @@ sqlalchemy = "^2.0.29"
 type = "git"
 url = "https://github.com/ContextNews/context-data-schemas.git"
 reference = "main"
-resolved_reference = "25822b6e47d1878754d06e062c86613c45ce826d"
+resolved_reference = "d6f4a5c748ecb0bc2811c0b1a4c1c43ac3e1dba6"
 
 [[package]]
 name = "coverage"
