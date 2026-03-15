@@ -9,7 +9,7 @@ from app.schemas.data import TSSeriesSchema
 from app.schemas.enums import TSFilterPeriod
 from app.services.data.datapoints_service import get_datapoints
 
-DEFAULT_ENTITY_IDS = ["CHN", "USA", "GBR"]
+DEFAULT_ENTITY_IDS = ["CHN", "USA", "GBR", "RUS", "FRA"]
 DEFAULT_PERIOD = TSFilterPeriod.ten_years
 
 
