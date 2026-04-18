@@ -1,9 +1,12 @@
+import logging
 import os
 from typing import Any
 
 import httpx
 
 from app.schemas.intel import MilitaryAircraftSchema
+
+logger = logging.getLogger(__name__)
 
 ADSB_MIL_URL = "https://adsbexchange-com1.p.rapidapi.com/v2/mil/"
 RAPIDAPI_HOST = "adsbexchange-com1.p.rapidapi.com"
@@ -45,6 +48,7 @@ def _parse_aircraft(ac: dict[str, Any]) -> MilitaryAircraftSchema | None:
 
 async def fetch_military_aircraft() -> list[MilitaryAircraftSchema]:
     api_key = os.environ.get("RAPIDAPI_KEY", "")
+    logger.info("Fetching military aircraft (key present: %s)", bool(api_key))
     async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.get(
             ADSB_MIL_URL,
@@ -53,6 +57,12 @@ async def fetch_military_aircraft() -> list[MilitaryAircraftSchema]:
                 "x-rapidapi-host": RAPIDAPI_HOST,
             },
         )
+        if response.status_code != 200:
+            logger.error(
+                "ADS-B Exchange returned %s: %s",
+                response.status_code,
+                response.text[:500],
+            )
         response.raise_for_status()
         data = response.json()
 
