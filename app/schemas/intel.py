@@ -3,6 +3,15 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class KBEntitySchema(BaseModel):
+    qid: str
+    entity_type: str
+    name: str
+    description: str | None = None
+    image_url: str | None = None
+    nationalities: list[str] | None = None
+
+
 class TgChannelSchema(BaseModel):
     id: int
     username: str

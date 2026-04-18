@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from app.routes.intel import channels, posts
+from app.routes.intel import channels, entities, posts
 
 router = APIRouter(prefix="/intel", tags=["intel"])
 router.include_router(channels.router)
 router.include_router(posts.router)
+router.include_router(entities.router)
