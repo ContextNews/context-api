@@ -12,6 +12,19 @@ class KBEntitySchema(BaseModel):
     nationalities: list[str] | None = None
 
 
+class MilitaryAircraftSchema(BaseModel):
+    hex: str
+    callsign: str | None = None
+    lat: float
+    lon: float
+    altitude_ft: int | None = None
+    on_ground: bool = False
+    speed_kts: int | None = None
+    heading_deg: int | None = None
+    aircraft_type: str | None = None
+    registration: str | None = None
+
+
 class TgChannelSchema(BaseModel):
     id: int
     username: str
