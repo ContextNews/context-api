@@ -207,8 +207,10 @@ async def get_story_feed(
     for story_id, _, _, source, url in article_rows:
         article_counts[story_id] = article_counts.get(story_id, 0) + 1
         sources_by_story.setdefault(story_id, set()).add(source)
-        if story_id not in image_by_story:
-            image_by_story[story_id] = url_to_image.get(url)
+        if not image_by_story.get(story_id):
+            img = url_to_image.get(url)
+            if img:
+                image_by_story[story_id] = img
 
     cards: list[StoryCard] = []
     for story in stories_db:
@@ -263,8 +265,10 @@ async def get_stories_by_entity(
     for story_id, _, _, source, url in article_rows:
         article_counts[story_id] = article_counts.get(story_id, 0) + 1
         sources_by_story.setdefault(story_id, set()).add(source)
-        if story_id not in image_by_story:
-            image_by_story[story_id] = url_to_image.get(url)
+        if not image_by_story.get(story_id):
+            img = url_to_image.get(url)
+            if img:
+                image_by_story[story_id] = img
 
     return [
         StoryCard(
