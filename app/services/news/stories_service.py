@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.queries.news.stories_queries import (
     query_related_stories,
     query_stories,
+    query_stories_by_entity_qid,
     query_story_articles,
     query_story_by_id,
     query_story_locations,
@@ -238,3 +239,40 @@ async def get_story_feed(
         limit=limit,
         has_more=has_more,
     )
+
+
+async def get_stories_by_entity(
+    db: Session, qid: str, limit: int = 50
+) -> list[StoryCard]:
+    stories_db = query_stories_by_entity_qid(db, qid, limit=limit)
+    if not stories_db:
+        return []
+
+    story_ids = [s.id for s in stories_db]
+    article_rows = query_story_articles(db, story_ids)
+    locations_by_story = query_story_locations(db, story_ids)
+    topics_by_story = query_story_topics(db, story_ids)
+
+    article_counts: dict[str, int] = {}
+    sources_by_story: dict[str, set[str]] = {}
+    for story_id, _, _, source, _ in article_rows:
+        article_counts[story_id] = article_counts.get(story_id, 0) + 1
+        sources_by_story.setdefault(story_id, set()).add(source)
+
+    return [
+        StoryCard(
+            story_id=s.id,
+            title=s.title,
+            topics=topics_by_story.get(s.id, []),
+            locations=[
+                ArticleLocationSchema(**loc) for loc in locations_by_story.get(s.id, [])
+            ],
+            persons=[],
+            article_count=article_counts.get(s.id, 0),
+            sources_count=len(sources_by_story.get(s.id, set())),
+            story_period=s.story_period.isoformat(),
+            updated_at=s.updated_at.isoformat(),
+            image_url=None,
+        )
+        for s in stories_db
+    ]

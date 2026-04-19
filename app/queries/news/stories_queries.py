@@ -264,6 +264,18 @@ REGION_COUNTRY_CODES: dict[FilterRegion, set[str]] = {
 }
 
 
+def query_stories_by_entity_qid(db: Session, qid: str, limit: int = 50) -> list[Story]:
+    return (
+        db.query(Story)
+        .join(StoryEntity, StoryEntity.story_id == Story.id)
+        .filter(StoryEntity.qid == qid)
+        .filter(Story.parent_story_id.is_(None))
+        .order_by(Story.story_period.desc())
+        .limit(limit)
+        .all()
+    )  # type: ignore[no-any-return]
+
+
 def query_stories(
     db: Session,
     from_date: datetime,
