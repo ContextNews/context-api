@@ -255,9 +255,16 @@ async def get_stories_by_entity(
 
     article_counts: dict[str, int] = {}
     sources_by_story: dict[str, set[str]] = {}
-    for story_id, _, _, source, _ in article_rows:
+    image_by_story: dict[str, str | None] = {}
+
+    article_urls = list({row[4] for row in article_rows})
+    url_to_image = await fetch_og_images(article_urls)
+
+    for story_id, _, _, source, url in article_rows:
         article_counts[story_id] = article_counts.get(story_id, 0) + 1
         sources_by_story.setdefault(story_id, set()).add(source)
+        if story_id not in image_by_story:
+            image_by_story[story_id] = url_to_image.get(url)
 
     return [
         StoryCard(
@@ -272,7 +279,7 @@ async def get_stories_by_entity(
             sources_count=len(sources_by_story.get(s.id, set())),
             story_period=s.story_period.isoformat(),
             updated_at=s.updated_at.isoformat(),
-            image_url=None,
+            image_url=image_by_story.get(s.id),
         )
         for s in stories_db
     ]
