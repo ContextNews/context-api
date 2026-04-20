@@ -95,7 +95,7 @@ def query_entity_coverage_stats(db: Session, qid: str) -> dict:
         .filter(KBEntity.entity_type == "location")
         .group_by(KBEntity.name, KBLocation.country_code)
         .order_by(desc("story_count"))
-        .limit(10)
+        .limit(5)
         .all()
     )
 
@@ -111,6 +111,7 @@ def query_entity_coverage_stats(db: Session, qid: str) -> dict:
         .join(StoryTopic, StoryTopic.story_id == Story.id)
         .group_by(StoryTopic.topic)
         .order_by(desc("story_count"))
+        .limit(5)
         .all()
     )
 
@@ -127,6 +128,7 @@ def query_entity_coverage_stats(db: Session, qid: str) -> dict:
         .filter(Story.parent_story_id.is_(None))
         .group_by(Article.source)
         .order_by(desc("article_count"))
+        .limit(5)
         .all()
     )
 
