@@ -7,7 +7,7 @@ from app.schemas.intel import (
     EntityHeatmapResponse,
     KBEntitySchema,
 )
-from app.schemas.news import StoryCard
+from app.schemas.news import PaginatedStoryCards
 from app.services.intel.entities_service import (
     get_entity,
     get_entity_coverage_stats,
@@ -27,12 +27,14 @@ def get_entities(
     return list_entities(db, entity_type=entity_type)
 
 
-@router.get("/{qid}/stories", response_model=list[StoryCard])
+@router.get("/{qid}/stories", response_model=PaginatedStoryCards)
 async def get_entity_stories(
     qid: str,
+    limit: int = 10,
+    offset: int = 0,
     db: Session = Depends(get_db),
-) -> list[StoryCard]:
-    return await get_stories_by_entity(db, qid)
+) -> PaginatedStoryCards:
+    return await get_stories_by_entity(db, qid, limit=limit, offset=offset)
 
 
 @router.get("/{qid}/heatmap", response_model=EntityHeatmapResponse)

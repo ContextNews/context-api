@@ -244,11 +244,17 @@ async def get_story_feed(
 
 
 async def get_stories_by_entity(
-    db: Session, qid: str, limit: int = 50
-) -> list[StoryCard]:
-    stories_db = query_stories_by_entity_qid(db, qid, limit=limit)
+    db: Session, qid: str, limit: int = 10, offset: int = 0
+) -> PaginatedStoryCards:
+    stories_db = query_stories_by_entity_qid(db, qid, limit=limit + 1, offset=offset)
+
+    has_more = len(stories_db) > limit
+    stories_db = stories_db[:limit]
+
     if not stories_db:
-        return []
+        return PaginatedStoryCards(
+            stories=[], offset=offset, limit=limit, has_more=False
+        )
 
     story_ids = [s.id for s in stories_db]
     article_rows = query_story_articles(db, story_ids)
@@ -270,7 +276,7 @@ async def get_stories_by_entity(
             if img:
                 image_by_story[story_id] = img
 
-    return [
+    cards = [
         StoryCard(
             story_id=s.id,
             title=s.title,
@@ -287,3 +293,7 @@ async def get_stories_by_entity(
         )
         for s in stories_db
     ]
+
+    return PaginatedStoryCards(
+        stories=cards, offset=offset, limit=limit, has_more=has_more
+    )
