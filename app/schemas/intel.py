@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -10,6 +10,44 @@ class KBEntitySchema(BaseModel):
     description: str | None = None
     image_url: str | None = None
     nationalities: list[str] | None = None
+
+
+class EntityMentionDay(BaseModel):
+    date: date
+    count: int
+
+
+class EntityHeatmapResponse(BaseModel):
+    data: list[EntityMentionDay]
+
+
+class EntityPeriodCounts(BaseModel):
+    today: int
+    this_month: int
+    this_year: int
+
+
+class EntityLocationStat(BaseModel):
+    name: str
+    country_code: str | None = None
+    story_count: int
+
+
+class EntityTopicStat(BaseModel):
+    topic: str
+    story_count: int
+
+
+class EntitySourceStat(BaseModel):
+    source: str
+    article_count: int
+
+
+class EntityCoverageStatsResponse(BaseModel):
+    period_counts: EntityPeriodCounts
+    top_locations: list[EntityLocationStat]
+    topics: list[EntityTopicStat]
+    sources: list[EntitySourceStat]
 
 
 class MilitaryAircraftSchema(BaseModel):

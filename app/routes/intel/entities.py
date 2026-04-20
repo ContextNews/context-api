@@ -2,9 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.schemas.intel import KBEntitySchema
+from app.schemas.intel import (
+    EntityCoverageStatsResponse,
+    EntityHeatmapResponse,
+    KBEntitySchema,
+)
 from app.schemas.news import StoryCard
-from app.services.intel.entities_service import get_entity, list_entities
+from app.services.intel.entities_service import (
+    get_entity,
+    get_entity_coverage_stats,
+    get_entity_heatmap,
+    list_entities,
+)
 from app.services.news.stories_service import get_stories_by_entity
 
 router = APIRouter(prefix="/entities", tags=["intel"])
@@ -24,6 +33,23 @@ async def get_entity_stories(
     db: Session = Depends(get_db),
 ) -> list[StoryCard]:
     return await get_stories_by_entity(db, qid)
+
+
+@router.get("/{qid}/heatmap", response_model=EntityHeatmapResponse)
+def get_entity_heatmap_endpoint(
+    qid: str,
+    days: int = 365,
+    db: Session = Depends(get_db),
+) -> EntityHeatmapResponse:
+    return get_entity_heatmap(db, qid, days)
+
+
+@router.get("/{qid}/coverage-stats", response_model=EntityCoverageStatsResponse)
+def get_entity_coverage_stats_endpoint(
+    qid: str,
+    db: Session = Depends(get_db),
+) -> EntityCoverageStatsResponse:
+    return get_entity_coverage_stats(db, qid)
 
 
 @router.get("/{qid}", response_model=KBEntitySchema)
