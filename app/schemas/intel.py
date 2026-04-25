@@ -87,3 +87,22 @@ class TgPostSchema(BaseModel):
 class TgPostListSchema(BaseModel):
     items: list[TgPostSchema]
     has_more: bool
+
+
+class TgStructuredPostSchema(BaseModel):
+    post_id: int
+    channel_id: int
+    message_id: int
+    text: str | None = None
+    date: datetime | None = None
+    label: str
+    priority: int
+    latitude: float | None = None
+    longitude: float | None = None
+    location_name: str | None = None
+    story_id: str | None = None
+
+
+class TgStructuredPostListSchema(BaseModel):
+    items: list[TgStructuredPostSchema]
+    has_more: bool
