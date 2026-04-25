@@ -135,9 +135,9 @@ sqlalchemy = "^2.0.29"
 
 [package.source]
 type = "git"
-url = "https://github.com/ContextNews/context-data-schemas.git"
+url = "https://github.com/ContextNews/context-db.git"
 reference = "main"
-resolved_reference = "3aed47ec0d628ca43fc6d10712d878b4811a6043"
+resolved_reference = "a95e38b5ce5cbb4ec5ec3bd036689f6f367ae169"
 
 [[package]]
 name = "coverage"
@@ -1995,4 +1995,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "e6df73488a86ff4e1965e07373b9526408572a01b67f8697760978c0d525df09"
+content-hash = "5ee9fc05a0ba3de4287bb824295e5ac39d9eed22e51d2dbe17161a60fc2b618a"

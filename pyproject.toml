@@ -9,7 +9,7 @@ dependencies = [
     "sqlalchemy>=2.0",
     "psycopg2-binary>=2.9",
     "pgvector>=0.2",
-    "context-db @ git+https://github.com/ContextNews/context-data-schemas.git@main",
+    "context-db @ git+https://github.com/ContextNews/context-db.git@main",
     "httpx (>=0.28.1,<0.29.0)",
     "pycountry>=24.6",
     "sqladmin>=0.16.0",

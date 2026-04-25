@@ -77,7 +77,6 @@ class ArticleEmbeddingAdmin(_ReadOnlyModelView, model=ArticleEmbedding):
     column_list = [
         ArticleEmbedding.article_id,
         ArticleEmbedding.embedding_model,
-        ArticleEmbedding.embedded_text,
         ArticleEmbedding.created_at,
     ]
 
