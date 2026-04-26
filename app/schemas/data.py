@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class TSSourceSchema(BaseModel):
     id: int
     name: str
+    display_name: str | None = None
     url: str | None = None
 
 

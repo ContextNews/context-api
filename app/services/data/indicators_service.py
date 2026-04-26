@@ -10,7 +10,10 @@ from app.schemas.data import TSIndicatorSchema, TSSourceSchema
 
 def list_sources(db: Session) -> list[TSSourceSchema]:
     rows = query_sources(db)
-    return [TSSourceSchema(id=s.id, name=s.name, url=s.url) for s in rows]
+    return [
+        TSSourceSchema(id=s.id, name=s.name, display_name=s.display_name, url=s.url)
+        for s in rows
+    ]
 
 
 def list_indicators(
@@ -25,7 +28,9 @@ def list_indicators(
             name=ind.name,
             unit=ind.unit,
             frequency=ind.frequency,
-            source=TSSourceSchema(id=src.id, name=src.name, url=src.url),
+            source=TSSourceSchema(
+                id=src.id, name=src.name, display_name=src.display_name, url=src.url
+            ),
         )
         for ind, src in rows
     ]
@@ -41,5 +46,7 @@ def get_indicator(db: Session, indicator_id: str) -> TSIndicatorSchema | None:
         name=ind.name,
         unit=ind.unit,
         frequency=ind.frequency,
-        source=TSSourceSchema(id=src.id, name=src.name, url=src.url),
+        source=TSSourceSchema(
+            id=src.id, name=src.name, display_name=src.display_name, url=src.url
+        ),
     )
