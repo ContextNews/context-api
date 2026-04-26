@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class EntityCount(BaseModel):
     type: str
+    qid: str | None = None
     name: str
     count: int
 
@@ -16,6 +17,7 @@ class HistoricalEntityCountDataPoint(BaseModel):
 
 class HistoricalEntityCount(BaseModel):
     type: str
+    qid: str | None = None
     name: str
     count: int
     history: list[HistoricalEntityCountDataPoint]

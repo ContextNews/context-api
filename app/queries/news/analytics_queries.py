@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 
-from context_db.models import Article, ArticleEntityMention
+from context_db.models import Article, ArticleEntityResolved, KBEntity
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
@@ -24,14 +24,16 @@ def query_top_entities(
 
     rows = (
         db.query(
-            ArticleEntityMention.mention_text.label("name"),
-            func.count(func.distinct(ArticleEntityMention.article_id)).label("count"),
+            KBEntity.qid.label("qid"),
+            KBEntity.name.label("name"),
+            func.count(func.distinct(ArticleEntityResolved.article_id)).label("count"),
         )
-        .join(Article, Article.id == ArticleEntityMention.article_id)
-        .filter(ArticleEntityMention.ner_type == entity_type)
+        .join(ArticleEntityResolved, ArticleEntityResolved.qid == KBEntity.qid)
+        .join(Article, Article.id == ArticleEntityResolved.article_id)
+        .filter(KBEntity.entity_type == entity_type)
         .filter(Article.published_at >= from_date, Article.published_at < to_date)
-        .group_by(ArticleEntityMention.mention_text)
-        .order_by(desc("count"), ArticleEntityMention.mention_text)
+        .group_by(KBEntity.qid, KBEntity.name)
+        .order_by(desc("count"), KBEntity.name)
     )
 
     if limit:
@@ -39,11 +41,10 @@ def query_top_entities(
 
     results = rows.all()
 
-    entities = [
-        EntityCount(type=entity_type, name=row.name, count=row.count) for row in results
+    return [
+        EntityCount(type=entity_type, qid=row.qid, name=row.name, count=row.count)
+        for row in results
     ]
-
-    return entities
 
 
 def query_top_entities_with_history(
@@ -59,9 +60,9 @@ def query_top_entities_with_history(
         db, entity_type, region, from_date, to_date, limit
     )
 
-    entity_names = [e.name for e in top_entities]
+    top_qids = [e.qid for e in top_entities]
 
-    if not entity_names:
+    if not top_qids:
         return []
 
     if interval == Interval.hourly:
@@ -71,34 +72,32 @@ def query_top_entities_with_history(
 
     history_rows = (
         db.query(
-            ArticleEntityMention.mention_text.label("name"),
+            KBEntity.qid.label("qid"),
             time_bucket.label("bucket"),
-            func.count(func.distinct(ArticleEntityMention.article_id)).label("count"),
+            func.count(func.distinct(ArticleEntityResolved.article_id)).label("count"),
         )
-        .join(Article, Article.id == ArticleEntityMention.article_id)
-        .filter(ArticleEntityMention.ner_type == entity_type)
-        .filter(ArticleEntityMention.mention_text.in_(entity_names))
+        .join(ArticleEntityResolved, ArticleEntityResolved.qid == KBEntity.qid)
+        .join(Article, Article.id == ArticleEntityResolved.article_id)
+        .filter(KBEntity.qid.in_(top_qids))
         .filter(Article.published_at >= from_date, Article.published_at < to_date)
-        .group_by(ArticleEntityMention.mention_text, time_bucket)
+        .group_by(KBEntity.qid, time_bucket)
         .order_by(time_bucket)
         .all()
     )
 
-    history_by_entity = defaultdict(list)
+    history_by_qid = defaultdict(list)
     for row in history_rows:
-        history_by_entity[row.name].append(
+        history_by_qid[row.qid].append(
             HistoricalEntityCountDataPoint(timestamp=row.bucket, count=row.count)
         )
 
-    results = []
-    for entity in top_entities:
-        results.append(
-            HistoricalEntityCount(
-                type=entity.type,
-                name=entity.name,
-                count=entity.count,
-                history=history_by_entity.get(entity.name, []),
-            )
+    return [
+        HistoricalEntityCount(
+            type=entity.type,
+            qid=entity.qid,
+            name=entity.name,
+            count=entity.count,
+            history=history_by_qid.get(entity.qid, []),
         )
-
-    return results
+        for entity in top_entities
+    ]
