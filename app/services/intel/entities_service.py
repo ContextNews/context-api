@@ -23,8 +23,10 @@ from app.schemas.intel import (
 def list_entities(
     db: Session,
     entity_type: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
 ) -> list[KBEntitySchema]:
-    rows = query_entities(db, entity_type=entity_type)
+    rows = query_entities(db, entity_type=entity_type, limit=limit, offset=offset)
     return [_to_schema(entity, nationalities) for entity, nationalities in rows]
 
 

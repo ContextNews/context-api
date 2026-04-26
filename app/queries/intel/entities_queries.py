@@ -10,24 +10,62 @@ from context_db.models import (
     StoryEntity,
     StoryTopic,
 )
-from sqlalchemy import alias, desc, func
+from sqlalchemy import alias, and_, case, desc, func
 from sqlalchemy.orm import Session
 
 REGISTRY_TYPES = ("person", "organization")
+ENTITY_PAGE_SIZE = 50
 
 
 def query_entities(
     db: Session,
     entity_type: str | None = None,
+    limit: int = ENTITY_PAGE_SIZE,
+    offset: int = 0,
 ) -> list[tuple]:
-    q = db.query(KBEntity, KBPerson.nationalities).outerjoin(
-        KBPerson, KBEntity.qid == KBPerson.qid
+    now = datetime.now(tz=UTC)
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    start_of_week = now - timedelta(days=7)
+
+    # Subquery: story mention counts per entity across three windows
+    mention_counts = (
+        db.query(
+            StoryEntity.qid.label("qid"),
+            func.count(
+                func.distinct(case((Story.story_period >= start_of_today, Story.id)))
+            ).label("today_count"),
+            func.count(
+                func.distinct(case((Story.story_period >= start_of_week, Story.id)))
+            ).label("week_count"),
+            func.count(func.distinct(Story.id)).label("alltime_count"),
+        )
+        .outerjoin(
+            Story,
+            and_(Story.id == StoryEntity.story_id, Story.parent_story_id.is_(None)),
+        )
+        .group_by(StoryEntity.qid)
+        .subquery()
     )
+
+    q = (
+        db.query(KBEntity, KBPerson.nationalities)
+        .outerjoin(KBPerson, KBEntity.qid == KBPerson.qid)
+        .outerjoin(mention_counts, mention_counts.c.qid == KBEntity.qid)
+    )
+
     if entity_type:
         q = q.filter(KBEntity.entity_type == entity_type)
     else:
         q = q.filter(KBEntity.entity_type.in_(REGISTRY_TYPES))
-    return q.order_by(KBEntity.name).all()  # type: ignore[no-any-return]
+
+    q = q.order_by(
+        desc(func.coalesce(mention_counts.c.today_count, 0)),
+        desc(func.coalesce(mention_counts.c.week_count, 0)),
+        desc(func.coalesce(mention_counts.c.alltime_count, 0)),
+        KBEntity.name,
+    )
+
+    return q.limit(limit).offset(offset).all()  # type: ignore[no-any-return]
 
 
 def query_entity(db: Session, qid: str) -> tuple | None:

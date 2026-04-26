@@ -22,9 +22,11 @@ router = APIRouter(prefix="/entities", tags=["intel"])
 @router.get("", response_model=list[KBEntitySchema])
 def get_entities(
     entity_type: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
     db: Session = Depends(get_db),
 ) -> list[KBEntitySchema]:
-    return list_entities(db, entity_type=entity_type)
+    return list_entities(db, entity_type=entity_type, limit=limit, offset=offset)
 
 
 @router.get("/{qid}/stories", response_model=PaginatedStoryCards)
